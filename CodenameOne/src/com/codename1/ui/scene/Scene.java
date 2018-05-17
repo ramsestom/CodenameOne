@@ -24,14 +24,16 @@ package com.codename1.ui.scene;
 
 import com.codename1.properties.Property;
 import com.codename1.ui.Component;
+import com.codename1.ui.Container;
 import com.codename1.ui.Graphics;
+import com.codename1.ui.plaf.Border;
 
 /**
  * A scene graph.  Supports 3D on platforms where {@link com.codename1.ui.Transform#isPerspectiveSupported() } is true (iOS and Android currently).
  * @author Steve Hannah
  * @deprecated For internal use only
  */
-public class Scene extends Component {
+public class Scene extends Container {
     /**
      * The root node.
      */
@@ -40,6 +42,7 @@ public class Scene extends Component {
     public final Property<Camera,Scene> camera;
     
     public Scene() {
+        setUIID("Scene");
         camera = new Property<Camera,Scene>("camera", (Camera)null);
     }
     
@@ -63,12 +66,26 @@ public class Scene extends Component {
     public void paint(Graphics g) {
         super.paint(g);
         if (root != null) {
+            g.resetAffine();
+            int clipX = g.getClipX();
+            int clipY = g.getClipY();
+            int clipW = g.getClipWidth();
+            int clipH = g.getClipHeight();
             g.translate(getX(), getY());
             g.setAntiAliased(true);
             root.render(g);
             g.translate(-getX(), -getY());
+            g.resetAffine();
+            g.setClip(clipX, clipY, clipW, clipH);
         }
     }
+
+    @Override
+    public void layoutContainer() {
+        root.setNeedsLayout(true);
+        super.layoutContainer(); 
+    }
+    
     
     
 }

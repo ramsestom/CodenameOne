@@ -22,9 +22,15 @@
  */
 package com.codename1.ui.spinner;
 
+import static com.codename1.ui.CN.convertToPixels;
 import com.codename1.ui.Component;
 import com.codename1.ui.Container;
+import com.codename1.ui.Graphics;
+import com.codename1.ui.Label;
+import com.codename1.ui.geom.Dimension;
+import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.GridLayout;
+import com.codename1.ui.layouts.LayeredLayout;
 import com.codename1.ui.plaf.Style;
 import java.util.Calendar;
 import java.util.Date;
@@ -59,6 +65,7 @@ class DateTimeSpinner3D extends Container implements ISpinner3D {
     void initSpinner() {
         if(date == null) {
             date = Spinner3D.createDate(startDate.getTime() + off, endDate.getTime() + off, currentDate.getTime());
+            date.setPreferredW((int)(new Label("Thu Dec 27", "Spinner3DRow").getPreferredW() * 1.5f ));
             Style dateStyle = Style.createProxyStyle(date.getRowStyle(), date.getSelectedRowStyle());
             dateStyle.setAlignment(Component.RIGHT);
             dateStyle.setPaddingRight(3f);
@@ -68,17 +75,35 @@ class DateTimeSpinner3D extends Container implements ISpinner3D {
             this.setEndDate(endDate);
             
             time = new TimeSpinner3D();
+            //getUnselectedStyle().setBgColor(date.getUnselectedStyle().getBgColor());
+            //getUnselectedStyle().setBgTransparency(255);
             addComponents();
             
         }
 
     }
+
+    @Override
+    protected Dimension calcPreferredSize() {
+        Dimension size = super.calcPreferredSize();
+        Label l = new Label("Thu Dec 27    55  55  AM", "Spinner3DRow");
+        size.setWidth((int)(l.getPreferredW() * 1.5f + convertToPixels(10f)));
+        return size;
+    }
+    
+    
     
     void addComponents() {
         if(date != null) {
-            setLayout(new GridLayout(2));
+            //setLayout(new LayeredLayout());
+            setLayout(BoxLayout.x());
             addComponent(date);
             addComponent(time);
+            //LayeredLayout ll = (LayeredLayout)getLayout();
+            //ll.setInsets(date, "0 auto 0 0")
+            //        .setInsets(time, "0 auto 0 0")
+            //        .setReferenceComponentLeft(time, date, 1f);
+            
         } 
     }
 
@@ -88,7 +113,6 @@ class DateTimeSpinner3D extends Container implements ISpinner3D {
     public Date getCurrentDate() {
         if(date != null) {
             Date dt = (Date)date.getValue();
-            System.out.println("Getting date value: "+dt);
             Calendar cld = Calendar.getInstance();
             cld.setTime(dt);
             cld.set(Calendar.HOUR_OF_DAY, 0);
@@ -97,7 +121,6 @@ class DateTimeSpinner3D extends Container implements ISpinner3D {
             cld.set(Calendar.MILLISECOND, 0);
             
             Integer minutesInDay = (Integer)time.getValue();
-            System.out.println("Getting time value: "+minutesInDay);
             if (minutesInDay == null) {
                 minutesInDay = 0;
             }
@@ -281,6 +304,17 @@ class DateTimeSpinner3D extends Container implements ISpinner3D {
     @Override
     public void setValue(Object value) {
         setCurrentDate((Date)value);
+    }
+
+    @Override
+    public void paint(Graphics g) {
+
+        int alpha = g.getAlpha();
+        g.setColor(date.getSelectedOverlayStyle().getBgColor());
+        g.setAlpha(255);
+        g.fillRect(getX(), getY(), getWidth(), getHeight());
+        g.setAlpha(alpha);
+        super.paint(g); //To change body of generated methods, choose Tools | Templates.
     }
     
     

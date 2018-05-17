@@ -1006,12 +1006,13 @@ public class UIManager {
         }
         
         if (installedTheme == null || !installedTheme.containsKey("Spinner3DOverlay")) {
-            themeProps.put("Spinner3DOverlay.border", Border.createCompoundBorder(
-                    Border.createLineBorder(1, ColorUtil.rgb(171, 184, 183)),
-                    Border.createLineBorder(1, ColorUtil.rgb(171, 184, 183)), Border.createEmpty(), Border.createEmpty()
-            ));
+            //themeProps.put("Spinner3DOverlay.border", Border.createCompoundBorder(
+            //        Border.createLineBorder(1, ColorUtil.rgb(171, 184, 183)),
+            //        Border.createLineBorder(1, ColorUtil.rgb(171, 184, 183)), Border.createEmpty(), Border.createEmpty()
+            //));
             themeProps.put("Spinner3DOverlay.transparency", "255");
-            themeProps.put("Spinner3DOverlay.bgColor", "D1D4DD");
+            themeProps.put("Spinner3DOverlay.bgColor", "efeff4");
+            themeProps.put("Spinner3DOverlay.fgColor", "abb8b7");
             
         }
         
@@ -1019,6 +1020,10 @@ public class UIManager {
             // For the interaction dialog when showing a Picker in lightweight mode
             themeProps.put("PickerDialog.padding", "0,0,0,0");
             themeProps.put("PickerDialog.border", Border.createEmpty());
+        }
+        
+        if (installedTheme == null || !installedTheme.containsKey("PickerDialogTablet")) {
+            themeProps.put("PickerDialogTablet.derive", "Dialog");
         }
         
         if (installedTheme == null || !installedTheme.containsKey("PickerDialogContent")) {
@@ -1030,6 +1035,10 @@ public class UIManager {
             themeProps.put("PickerDialogContent.transparency", "255");
         }
         
+        if (installedTheme == null || !installedTheme.containsKey("PicketDialogContentTablet")) {
+            themeProps.put("PickerDialogContentTablet.derive", "PopupContentPane");
+        }
+        
         if (installedTheme == null || !installedTheme.containsKey("PickerButtonBar")) {
             // For the button bar (with Cancel and Done) of the Picker interaction dialog in lightweight mode
             themeProps.put("PickerButtonBar.margin", "0,0,0,0");
@@ -1038,12 +1047,25 @@ public class UIManager {
             themeProps.put("PickerButtonBar.transparency", "255");
         }
         
+        if (installedTheme == null || !installedTheme.containsKey("PickerButtonBarTablet")) {
+            themeProps.put("PickerButtonBarTablet.derive", "Container");
+        }
+        
         if (installedTheme == null || !installedTheme.containsKey("PickerButton")) {
             // For the buttons of the picker in lightweight mode (the Cancel and Done buttons)
             themeProps.put("PickerButton.derive", "Button");
             themeProps.put("PickerButton.sel#derive", "Button");
             themeProps.put("PickerButton.press#derive", "Button");
         }
+        
+        if (installedTheme == null || !installedTheme.containsKey("PickerButtonTablet")) {
+            // For the buttons of the picker in lightweight mode (the Cancel and Done buttons)
+            themeProps.put("PickerButtonTablet.derive", "Button");
+            themeProps.put("PickerButtonTablet.sel#derive", "Button");
+            themeProps.put("PickerButtonTablet.press#derive", "Button");
+        }
+        
+        
     }
 
     /**

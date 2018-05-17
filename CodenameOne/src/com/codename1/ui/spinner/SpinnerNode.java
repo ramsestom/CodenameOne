@@ -5,33 +5,38 @@
  */
 package com.codename1.ui.spinner;
 
-import com.codename1.charts.util.ColorUtil;
 import com.codename1.ui.Component;
-import com.codename1.ui.Font;
 import com.codename1.ui.Graphics;
 import com.codename1.ui.Label;
-import com.codename1.ui.Transform;
+import com.codename1.ui.Painter;
 import com.codename1.ui.events.DataChangedListener;
 import com.codename1.ui.events.ScrollListener;
 import com.codename1.ui.events.SelectionListener;
 import com.codename1.ui.geom.Rectangle;
 import com.codename1.ui.geom.Rectangle2D;
 import com.codename1.ui.list.ListModel;
-import com.codename1.ui.plaf.Border;
 import com.codename1.ui.plaf.Style;
 import com.codename1.ui.scene.Bounds;
 import com.codename1.ui.scene.Node;
+import com.codename1.ui.scene.NodePainter;
 import com.codename1.ui.scene.Point3D;
+import com.codename1.ui.scene.TextPainter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- *
+ * A spinner node for rendering spinnable lists. 
  * @author shannah
  */
 class SpinnerNode extends Node {
+    private Label rowTemplate = new Label("", "Spinner3DRow");
+    private Label overlayTemplate = new Label("", "Spinner3DOverlay");
+    private Style rowStyle, selectedRowStyle, overlayStyle;
+    
+    
+    
     
     private Map<Integer,Node> childIndex = new HashMap<Integer,Node>();
     private List<ScrollListener> scrollListeners;
@@ -103,10 +108,31 @@ class SpinnerNode extends Node {
     }
     
     public SpinnerNode() {
-        Component overlayRenderer = new Label();
-        overlayRenderer.setUIID("Spinner3DOverlay");
-        ((Label)overlayRenderer).setShowEvenIfBlank(true);
-        selectedRowOverlay.setRenderer(overlayRenderer);
+        rowStyle = rowTemplate.getUnselectedStyle();
+        selectedRowStyle = rowTemplate.getSelectedStyle();
+        overlayStyle = overlayTemplate.getUnselectedStyle();
+        
+        
+        //Component overlayRenderer = new Label();
+        //overlayRenderer.setUIID("Spinner3DOverlay");
+        //((Label)overlayRenderer).setShowEvenIfBlank(true);
+        //selectedRowOverlay.setRenderer(overlayRenderer);
+        selectedRowOverlay.setStyle(overlayStyle);
+        selectedRowOverlay.setRenderer(new NodePainter() {
+
+            @Override
+            public void paint(Graphics g, Rectangle bounds, Node node) {
+                Style style = node.getStyle();
+                g.setColor(style.getBgColor());
+                g.fillRect(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
+                g.setColor(style.getFgColor());
+                g.drawLine(bounds.getX(), bounds.getY(), bounds.getWidth() + bounds.getX(), bounds.getY());
+                g.drawLine(bounds.getX(), bounds.getY()+bounds.getHeight(), 
+                        bounds.getX() + bounds.getWidth(), bounds.getY() + bounds.getHeight()
+                );
+            }
+        });
+        
         
     }
     
@@ -118,18 +144,23 @@ class SpinnerNode extends Node {
     }
     
     public Style getRowStyle() {
-        return renderer.getUnselectedStyle();
+        return rowStyle;
     
     }
     
+    public int getNumSides() {
+        return numSides;
+    }
+            
+    
     public Style getSelectedRowStyle() {
-        return renderer.getSelectedStyle();
+        return selectedRowStyle;
     }
     
     
     
     public Style getSelectedOverlayStyle() {
-        return selectedRowOverlay.getRenderer().getUnselectedStyle();
+        return overlayStyle;
     }
     
     public ListModel<String> getListModel() {
@@ -320,7 +351,7 @@ class SpinnerNode extends Node {
         }
         if (listModel != null) {
             ListModel<String> list = listModel;
-            int len = list.getSize();
+            //int len = list.getSize();
             //for (int i=0; i<len; i++) {
             final Node n = new Node();
             //String lbl = list.getItemAt(i);
@@ -347,7 +378,8 @@ class SpinnerNode extends Node {
             //renderer.setUIID("Spinner3DRow");
             renderer.setSelectedStyle(getSelectedRowStyle());
             renderer.setUnselectedStyle(getRowStyle());
-            n.setRenderer(renderer);
+            
+            n.setRenderer(new TextPainter(lbl, Component.CENTER));
             remove(selectedRowOverlay);
             add(n);
             add(selectedRowOverlay);
@@ -360,6 +392,16 @@ class SpinnerNode extends Node {
             //setSelectedIndex(listModel.getSelectedIndex());
         }
         return null;
+    }
+    
+    private static class RowPainter implements Painter {
+        private Style unselectedStyle, selectedStyle, painter;
+
+        @Override
+        public void paint(Graphics g, Rectangle rect) {
+            
+        }
+        
     }
     
     @Override
@@ -396,22 +438,27 @@ class SpinnerNode extends Node {
                 child.visible.set(true);
                 Bounds localBounds = child.boundsInLocal.get();
                 localBounds.setWidth(width);
-                localBounds.setDepth(diameter);
+                localBounds.setDepth(0);
                 localBounds.setHeight(diameter);
                 localBounds.setMinX(0.0);
                 localBounds.setMinY(0.0);
                 child.paintingRect.set(new Rectangle(0, (int)(diameter/2 - rendererHeight/2), (int)width, (int)rendererHeight));
                 //child.localCanvasZ.set(diameter/2); // So that rotation works correctly
                 if (usePerspective()) {
+                    localBounds.setDepth(diameter);
                     double angle = calculateRotationForChild(index);
                     if (Math.abs(angle) < 10) {
                         //Log.p("Settin focus");
                         child.addTags("selected");
+                        child.setStyle(getSelectedRowStyle());
+                        child.opacity.set(1.0);
                     } else {
                         child.removeTags("selected");
-                        int opacity = (int)(Math.cos(angle * Math.PI / 180) * 255);
+                        double opacity = Math.cos(angle * Math.PI / 180);
+                        child.setStyle(getRowStyle());
+                        child.opacity.set(opacity);
                         //Log.p("Opacity="+opacity);
-                        child.getRenderer().getStyle().setOpacity(Math.min(255, Math.max(0, opacity)));
+                        //child.getRenderer().getStyle().setOpacity(Math.min(255, Math.max(0, opacity)));
                     }
                     child.rotate.set(-angle);
                     child.rotationAxis.set(new Point3D(1, 0, 0)); // Rotate along X-Axis
@@ -433,11 +480,16 @@ class SpinnerNode extends Node {
                     if (Math.abs(angle) < 10 * Math.PI/180) {
                         //Log.p("Settin focus");
                         child.addTags("selected");
+                        child.setStyle(selectedRowStyle);
+                        child.opacity.set(1.0);
                     } else {
                         child.removeTags("selected");
-                        int opacity = (int)(Math.cos(angle) * 255);
-                        //Log.p("Opacity="+opacity);
-                        child.getRenderer().getStyle().setOpacity(Math.min(255, Math.max(0, opacity)));
+                        child.setStyle(rowStyle);
+                        double opacity = Math.cos(angle);
+                        child.opacity.set(opacity);
+                        
+                        
+                        
                     }
                     //System.out.println("Max angle:"+maxAngle);
                     double projectedHeight = Math.abs((diameter/2) * (Math.sin(minAngle) - Math.sin(maxAngle)));
@@ -469,9 +521,13 @@ class SpinnerNode extends Node {
         
     }
 
-    @Override
+    //@Override
     public void render(Graphics g) {
-        
+        g.setColor(overlayStyle.getBgColor());
+        int alpha = g.getAlpha();
+        g.setAlpha(255);
+        g.fillRect(0, 0, (int)boundsInLocal.get().getWidth(), (int)boundsInLocal.get().getHeight());
+        g.setAlpha(alpha);
         super.render(g);
         
         int clipX = g.getClipX();

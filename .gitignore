@@ -50,3 +50,5 @@ node_modules
 /tests/core/nbproject/private/
 /tests/core/dist/
 /tests/core/build/
+/bin/
+nbproject

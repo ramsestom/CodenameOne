@@ -91,7 +91,7 @@
         <move file="${dist.jar}" tofile="${dist.jar}.old" />
         <jar jarfile="${dist.jar}">
             <zipfileset src="${dist.jar}.old" excludes="META-INF/*" />
-            <zipfileset src="${reference.CodenameOne.jar}" excludes="META-INF/*,**/ImplementationFactory*" />
+            <zipfileset src="${reference.CodenameOneFork.jar}" excludes="META-INF/*,**/ImplementationFactory*" />
             <manifest>
             </manifest>
         </jar>

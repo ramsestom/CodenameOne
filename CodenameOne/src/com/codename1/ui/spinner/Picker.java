@@ -96,6 +96,10 @@ public class Picker extends Button {
             case Display.PICKER_TYPE_DATE:
             case Display.PICKER_TYPE_TIME:
             case Display.PICKER_TYPE_DATE_AND_TIME:
+            case Display.PICKER_TYPE_DURATION:
+            case Display.PICKER_TYPE_DURATION_HOURS:
+            case Display.PICKER_TYPE_DURATION_MINUTES:
+            case Display.PICKER_TYPE_CALENDAR:
                 return true;
         }
         return false;
@@ -134,6 +138,12 @@ public class Picker extends Button {
      */
     public Picker() {
         setUIID("TextField");
+        if (!Display.getInstance().isNativePickerTypeSupported(Display.PICKER_TYPE_STRINGS)) {
+            // For platforms that don't support native pickers, we'll make lightweight mode
+            // the default.  This will result in these platforms using the new Spinner3D classes
+            // instead of the old Spinner classes
+            lightweightMode = true;
+        }
         addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 if (ignoreActionEvent(evt)) {
@@ -199,6 +209,11 @@ public class Picker extends Button {
                             }
                             break;
                         }
+                        case Display.PICKER_TYPE_CALENDAR:
+                            showInteractionDialog();
+                            evt.consume();
+                            break;
+                                
                         case Display.PICKER_TYPE_DATE: {
                             DateSpinner ds = new DateSpinner();
                             if(value == null) {
@@ -333,6 +348,18 @@ public class Picker extends Button {
                 return out;
             }
             
+            private CalendarPicker createCalendarPicker() {
+                
+                CalendarPicker out = new CalendarPicker();
+                if (value != null) {
+                    out.setValue(value);
+                } else {
+                    out.setValue(new Date());
+                }
+            
+                return out;
+            }
+            
             private TimeSpinner3D createTimePicker3D() {
                 TimeSpinner3D out = new TimeSpinner3D();
                 out.setMinuteStep(minuteStep);
@@ -351,6 +378,20 @@ public class Picker extends Button {
                     out.setValue(value);
                 } else {
                     out.setValue(new Date());
+                }
+                return out;
+            }
+            
+            private DurationSpinner3D createDurationPicker3D() {
+                DurationSpinner3D out = new DurationSpinner3D(
+                        type == Display.PICKER_TYPE_DURATION_MINUTES ? DurationSpinner3D.FIELD_MINUTE :
+                        type == Display.PICKER_TYPE_DURATION_HOURS ? DurationSpinner3D.FIELD_HOUR :
+                                DurationSpinner3D.FIELD_HOUR | DurationSpinner3D.FIELD_MINUTE
+                );
+                if (value != null) {
+                    out.setValue(value);
+                } else {
+                    out.setValue(0);
                 }
                 return out;
             }
@@ -376,11 +417,14 @@ public class Picker extends Button {
                 dlg.getContentPane().setUIID(dlgUiid);
                 dlg.getContentPane().getUnselectedStyle().setBgColor(new Label("", "Spinner3DOverlay").getUnselectedStyle().getBgColor());
                 
-                final ISpinner3D spinner;
+                final InternalPickerWidget spinner;
                 final Component spinnerC;
                 switch (type) {
                     case Display.PICKER_TYPE_STRINGS:
                         spinner = createStringPicker3D();
+                        break;
+                    case Display.PICKER_TYPE_CALENDAR:
+                        spinner = createCalendarPicker();
                         break;
                     case Display.PICKER_TYPE_DATE:
                         spinner = createDatePicker3D();
@@ -390,6 +434,11 @@ public class Picker extends Button {
                         break;
                     case Display.PICKER_TYPE_DATE_AND_TIME:
                         spinner = createDateTimePicker3D();
+                        break;
+                    case Display.PICKER_TYPE_DURATION:
+                    case Display.PICKER_TYPE_DURATION_HOURS:
+                    case Display.PICKER_TYPE_DURATION_MINUTES:
+                        spinner = createDurationPicker3D();
                         break;
                     default:
                         throw new IllegalArgumentException("Unsupported picker type "+type);
@@ -730,6 +779,7 @@ public class Picker extends Button {
                 setText(value.toString());
                 break;
             }
+            case Display.PICKER_TYPE_CALENDAR:
             case Display.PICKER_TYPE_DATE: {
                 setText(L10NManager.getInstance().formatDateShortStyle((Date)value));
                 break;

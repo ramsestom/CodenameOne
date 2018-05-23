@@ -141,7 +141,7 @@ public class TextComponent extends InputComponent {
         initInput();
     }
 
-    void constructUI() {
+    protected void constructUI() {
         if(getComponentCount() == 0) {
             if(isOnTopMode() && isFocusAnimation()) {
                 getLabel().setUIID("FloatingHint");

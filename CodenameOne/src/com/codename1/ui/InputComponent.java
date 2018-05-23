@@ -99,7 +99,7 @@ public abstract class InputComponent extends Container {
      * Returns the internal label implementation
      * @return the label
      */
-    Label getLabel() {
+    protected Label getLabel() {
         return lbl;
     }
     
@@ -107,11 +107,11 @@ public abstract class InputComponent extends Container {
      * Returns the internal error message implementation
      * @return the label
      */
-    Label getErrorMessage() {
+    protected Label getErrorMessage() {
         return errorMessage;
     }
     
-    void constructUI() {
+    protected void constructUI() {
         if(getComponentCount() == 0) {
             if(isOnTopMode()) {
                 lbl.setUIID("FloatingHint");

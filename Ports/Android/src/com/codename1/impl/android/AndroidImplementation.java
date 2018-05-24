@@ -755,6 +755,7 @@ public class AndroidImplementation extends CodenameOneImplementation implements 
         return Thread.NORM_PRIORITY;
     }
 
+    /* Override of this function no longer needed as getDeviceDensity now derive from getDeviceDPI by default
     @Override
     protected int getDeviceDensity() {
         DisplayMetrics metrics = new DisplayMetrics();
@@ -794,7 +795,7 @@ public class AndroidImplementation extends CodenameOneImplementation implements 
 
         return Display.DENSITY_MEDIUM;
     }
-
+    */
     
     @Override
     public int getDeviceDPI() {
@@ -6217,6 +6218,9 @@ public class AndroidImplementation extends CodenameOneImplementation implements 
         if(!checkForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "This is required to take a picture")){
             return;
         }
+        if (!checkForPermission(Manifest.permission.CAMERA, "This is required to take a picture")) {
+            return;
+        }
         callback = new EventDispatcher();
         callback.addListener(response);
         Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
@@ -6232,7 +6236,7 @@ public class AndroidImplementation extends CodenameOneImplementation implements 
         intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, imageUri);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-        this.getActivity().startActivityForResult(intent, CAPTURE_IMAGE);
+        getActivity().startActivityForResult(intent, CAPTURE_IMAGE);
     }
 
     @Override
@@ -6241,6 +6245,9 @@ public class AndroidImplementation extends CodenameOneImplementation implements 
             throw new RuntimeException("Cannot capture video in background mode");
         }
         if(!checkForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, "This is required to take a video")){
+            return;
+        }
+        if (!checkForPermission(Manifest.permission.CAMERA, "This is required to take a video")) {
             return;
         }
         callback = new EventDispatcher();
@@ -6263,7 +6270,7 @@ public class AndroidImplementation extends CodenameOneImplementation implements 
         if(!checkForPermission(Manifest.permission.RECORD_AUDIO, "This is required to record the audio")){
             return;
         }
-
+        
         try {
             final Form current = Display.getInstance().getCurrent();
 

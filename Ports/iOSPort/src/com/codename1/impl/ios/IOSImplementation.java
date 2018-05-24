@@ -5046,6 +5046,7 @@ public class IOSImplementation extends CodenameOneImplementation {
 
     private int dDensity = -1;
     
+    /* Override of this function no longer needed as getDeviceDensity now derive from getDeviceDPI by default
     @Override
     protected int getDeviceDensity() {
         // IMPORTANT:  If you modify this method, you MUST make the equivalent changes
@@ -5082,6 +5083,8 @@ public class IOSImplementation extends CodenameOneImplementation {
         }
         return dDensity;
     }
+    */
+    
     
     private int dDPI = -1;
     

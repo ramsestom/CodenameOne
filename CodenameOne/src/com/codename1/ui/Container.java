@@ -75,7 +75,7 @@ import java.util.Vector;
  * @author Chen Fishbein
  */
 public class Container extends Component implements Iterable<Component>{
-    static boolean enableLayoutOnPaint = true;
+    protected static boolean enableLayoutOnPaint = true;
     private Component leadComponent;
     private Layout layout;
     private java.util.ArrayList<Component> components = new java.util.ArrayList<Component>();
@@ -85,7 +85,7 @@ public class Container extends Component implements Iterable<Component>{
     private java.util.Vector cmpTransitions;
     private int scrollIncrement = 20;
     private boolean blockFocus = false;
-    private boolean dontRecurseContainer;
+    protected boolean dontRecurseContainer;
     private UIManager uiManager;
 
     /**
@@ -3100,7 +3100,7 @@ public class Container extends Component implements Iterable<Component>{
         
         @Override
         protected void updateState() {
-            if(animatedComponents != null) {
+        	if(animatedComponents != null) {
                 int componentCount = animatedComponents.size();
                 for(int iter = 0 ; iter < componentCount ; iter++) {
                     Component currentCmp = (Component)animatedComponents.elementAt(iter);

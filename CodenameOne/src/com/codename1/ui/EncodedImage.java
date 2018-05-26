@@ -284,8 +284,6 @@ public class EncodedImage extends Image {
         {
         	int dpi = Display.getInstance().getDeviceDPI();
 
-        	float bestFitDPIDist = Float.MAX_VALUE;
-
         	for(int iter = 0 ; iter < dlen ; iter++) {
         		int currentDPI = dpis[iter];
         		if(dpi == currentDPI) {

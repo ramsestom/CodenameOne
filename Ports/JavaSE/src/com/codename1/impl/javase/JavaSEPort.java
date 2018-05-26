@@ -373,35 +373,8 @@ public class JavaSEPort extends CodenameOneImplementation {
         }
         return super.convertToPixels(dipCount, horizontal);
     }
-    
-    
-    public int getDeviceDPI() {
-        if(defaultPixelMilliRatio != null) {
-            /*
-            if(Math.round(defaultPixelMilliRatio.doubleValue()) == 10) {
-                return Display.DENSITY_MEDIUM;
-            }
-            if(Math.round(defaultPixelMilliRatio.doubleValue()) == 20) {
-                return Display.DENSITY_VERY_HIGH;
-            }
-            System.out.println("Ratio "+defaultPixelMilliRatio.doubleValue());
-            */
-            if (retinaScale > 1.5) {
-                return Display.DPI_XHIGH;
-            } else {
-                return Display.DPI_MEDIUM;
-            }
-        }
-        return super.getDeviceDPI(); 
-    }
-    
-    
-    public int convertToPixels(int dipCount, boolean horizontal) {
-        if (pixelMilliRatio != null) {
-            return (int) Math.round(dipCount * pixelMilliRatio.doubleValue());
-        }
-        return super.convertToPixels(dipCount, horizontal);
-    }
+      
+   
     
     /**
      * @return the defaultPixelMilliRatio

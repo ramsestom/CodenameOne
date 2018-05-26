@@ -1169,7 +1169,7 @@ public class Resources {
         		}
         	}
         }
-        */
+        
         if(runtimeMultiImages && !skipAll) {
             byte[][] data = new byte[dpiCount][];
             for(int iter = 0 ; iter < lengths.length ; iter++) {

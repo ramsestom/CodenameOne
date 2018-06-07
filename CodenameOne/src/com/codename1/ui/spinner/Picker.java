@@ -32,23 +32,29 @@ import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
 import com.codename1.ui.ComponentSelector;
+import static com.codename1.ui.ComponentSelector.$;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
+import com.codename1.ui.FontImage;
 import com.codename1.ui.Form;
+import com.codename1.ui.Graphics;
 import com.codename1.ui.Label;
 import com.codename1.ui.VirtualInputDevice;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.GridLayout;
 import com.codename1.ui.list.DefaultListModel;
 import com.codename1.ui.plaf.Border;
 import com.codename1.ui.plaf.RoundRectBorder;
+import com.codename1.ui.plaf.Style;
 import com.codename1.ui.plaf.UIManager;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.ListIterator;
 
 /**
  * <p>{@code Picker} is a component and API that allows either popping up a spinner or
@@ -78,12 +84,18 @@ public class Picker extends Button {
     private int preferredPopupWidth;
     private int preferredPopupHeight;
     private int minuteStep = 5;
+    private VirtualInputDevice currentInput;
+    
+    // Variables to store the form's previous margins before showing
+    // the popup dialog so that we can restore them when the popup is disposed.
+    private byte[] tmpContentPaneMarginUnit;
+    private float tmpContentPaneBottomMargin;
     
     /**
      * Flag to indicate that the picker should prefer lightweight components 
      * rather than native components.
      */
-    private boolean lightweightMode;
+    private boolean useLightweightPopup;
     
     /**
      * Checks if the given type is supported in LightWeight mode.  
@@ -108,18 +120,18 @@ public class Picker extends Button {
     /**
      * Sets the picker to use lightweight mode for its widgets.  With this mode enabled
      * the picker will use cross-platform lightweight widgets instead of native widgets.
-     * @param lightweightMode 
+     * @param useLightweightPopup 
      */
-    public void setLightweightMode(boolean lightweightMode) {
-        this.lightweightMode = lightweightMode;
+    public void setUseLightweightPopup(boolean useLightweightPopup) {
+        this.useLightweightPopup = useLightweightPopup;
     }
     
     /**
      * Checks if this picker is in lightweight mode.  If this returns true, then the 
      * picker will use cross-platform lightweight widgets instead of native widgets.
      */
-    public boolean isLightweightMode() {
-        return lightweightMode;
+    public boolean isUseLightweightPopup() {
+        return useLightweightPopup;
     }
     
     /**
@@ -137,12 +149,13 @@ public class Picker extends Button {
      * Default constructor
      */
     public Picker() {
-        setUIID("TextField");
+        setUIID("Picker");
+        setPreferredTabIndex(0);
         if (!Display.getInstance().isNativePickerTypeSupported(Display.PICKER_TYPE_STRINGS)) {
             // For platforms that don't support native pickers, we'll make lightweight mode
             // the default.  This will result in these platforms using the new Spinner3D classes
             // instead of the old Spinner classes
-            lightweightMode = true;
+            useLightweightPopup = true;
         }
         addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -151,9 +164,11 @@ public class Picker extends Button {
                     // we don't want to re-handle it here.
                     return;
                 }
-                
-                
-                if (lightweightMode && isLightweightModeSupportedForType(type)) {
+                if (isEditing()) {
+                    evt.consume();
+                    return;
+                }
+                if (useLightweightPopup && isLightweightModeSupportedForType(type)) {
                     showInteractionDialog();
                     evt.consume();
                     return;
@@ -396,29 +411,42 @@ public class Picker extends Button {
                 return out;
             }
             
+            private static final int COMMAND_DONE=1;
+            private static final int COMMAND_NEXT=2;
+            private static final int COMMAND_PREV=3;
+            private static final int COMMAND_CANCEL=4;
+            
+            private void endEditing(int command, InteractionDialog dlg, InternalPickerWidget spinner) {
+                currentInput = null;
+                restoreContentPane();
+                dlg.disposeToTheBottom();
+                if (command != COMMAND_CANCEL) {
+                    value = spinner.getValue();
+                    updateValue();
+                    // (x, y) = (-99, -99) signals the built-in action listner
+                    // to ignore this event and just propagage it to external
+                    // listeners.  See ignoreActionEvent(ActionEvent)
+                    fireActionEvent(-99, -99);
+                    
+                    Component next = null;
+                    Form f = getComponentForm();
+                    if (f != null) {
+                        if (command == COMMAND_NEXT) {
+                            next = f.getNextComponent(Picker.this);
+                        } else if (command == COMMAND_PREV) {
+                            next = f.getPreviousComponent(Picker.this);
+                        }
+                    }
+                    if (next != null) {
+                        next.requestFocus();
+                        next.startEditingAsync();
+                    }
+                }
+            }
+            
             private void showInteractionDialog() {
                 boolean isTablet = Display.getInstance().isTablet();
-                final InteractionDialog dlg = new InteractionDialog();
-                ComponentSelector.select("DialogTitle", dlg).getParent().setPadding(0).setMargin(0).setBorder(Border.createEmpty());
-                dlg.getTitleComponent().setVisible(false);
-                ComponentSelector.select(dlg.getTitleComponent()).setPadding(0).setMargin(0);
-                dlg.setUIID(isTablet ? "PickerDialogTablet" : "PickerDialog");
-                dlg.getUnselectedStyle().setBgColor(new Label("", "Spinner3DOverlay").getUnselectedStyle().getBgColor());
-                dlg.getUnselectedStyle().setBgTransparency(255);
-                if (isTablet) {
-                    
-                    dlg.getUnselectedStyle().setBorder(RoundRectBorder.create().cornerRadius(2f));
-                    
-                }
-                
-                dlg.getContentPane().setLayout(new BorderLayout());
-                
-                String dlgUiid = isTablet ? "PickerDialogContentTablet" : "PickerDialogContent";
-                dlg.getContentPane().setUIID(dlgUiid);
-                dlg.getContentPane().getUnselectedStyle().setBgColor(new Label("", "Spinner3DOverlay").getUnselectedStyle().getBgColor());
-                
                 final InternalPickerWidget spinner;
-                final Component spinnerC;
                 switch (type) {
                     case Display.PICKER_TYPE_STRINGS:
                         spinner = createStringPicker3D();
@@ -443,6 +471,68 @@ public class Picker extends Button {
                     default:
                         throw new IllegalArgumentException("Unsupported picker type "+type);
                 }
+                final InteractionDialog dlg = new InteractionDialog() {
+
+                    ActionListener keyListener;
+                    @Override
+                    protected void initComponent() {
+                        final InteractionDialog self = this;
+                        super.initComponent();
+                        if (keyListener == null) {
+                            keyListener = new ActionListener() {
+
+                                @Override
+                                public void actionPerformed(ActionEvent evt) {
+                                    if (Display.getInstance().isShiftKeyDown()) {
+                                        endEditing(COMMAND_PREV, self, spinner);
+                                    } else {
+                                        endEditing(COMMAND_NEXT, self, spinner);
+                                    }
+                                        
+                                }
+                                
+                            };
+                        }
+                        getComponentForm().addKeyListener(9, keyListener);
+                    }
+
+                    @Override
+                    protected void deinitialize() {
+                        Form f = getComponentForm();
+                        if (f == null) {
+                            f = Display.getInstance().getCurrent();
+                        }
+                        if (f != null && keyListener != null) {
+                            f.removeKeyListener(9, keyListener);
+                        }
+                        super.deinitialize();
+                    }
+                    
+                    
+                    
+                };
+                //dlg.setFormMode(!isTablet);
+                ComponentSelector.select("DialogTitle", dlg).getParent().setPadding(0).setMargin(0).setBorder(Border.createEmpty());
+                dlg.getTitleComponent().setVisible(false);
+                ComponentSelector.select(dlg.getTitleComponent()).setPadding(0).setMargin(0);
+                dlg.setUIID(isTablet ? "PickerDialogTablet" : "PickerDialog");
+                dlg.getUnselectedStyle().setBgColor(new Label("", "Spinner3DOverlay").getUnselectedStyle().getBgColor());
+                dlg.getUnselectedStyle().setBgTransparency(255);
+                if (isTablet) {
+                    
+                    dlg.getUnselectedStyle().setBorder(RoundRectBorder.create().cornerRadius(2f));
+                    
+                }
+                
+                dlg.getContentPane().setLayout(new BorderLayout());
+                
+                String dlgUiid = isTablet ? "PickerDialogContentTablet" : "PickerDialogContent";
+                dlg.getContentPane().setUIID(dlgUiid);
+                dlg.getContentPane().getUnselectedStyle().setBgColor(new Label("", "Spinner3DOverlay").getUnselectedStyle().getBgColor());
+                
+                
+                final Component spinnerC;
+                
                 
                 spinnerC = (Component)spinner;
                 Container wrapper = BorderLayout.center(spinnerC);
@@ -461,13 +551,8 @@ public class Picker extends Button {
 
                     @Override
                     public void actionPerformed(ActionEvent evt) {
-                        dlg.disposeToTheBottom();
-                        value = spinner.getValue();
-                        updateValue();
-                        // (x, y) = (-99, -99) signals the built-in action listner
-                        // to ignore this event and just propagage it to external
-                        // listeners.  See ignoreActionEvent(ActionEvent)
-                        fireActionEvent(-99, -99);
+                        endEditing(COMMAND_DONE, dlg, spinner);
+                        
                         
                     }
                     
@@ -477,12 +562,71 @@ public class Picker extends Button {
 
                     @Override
                     public void actionPerformed(ActionEvent evt) {
-                        dlg.disposeToTheBottom();
+                        endEditing(COMMAND_CANCEL, dlg, spinner);
+                        
+                                
                     }
                     
                 });
                 
-                Container buttonBar = BorderLayout.centerEastWest(null, doneButton, cancelButton);
+                Button nextButton = null;
+                //final Component nextComponent = getNextFocusRight() != null ? getNextFocusRight() :
+                //        getNextFocusDown() != null ? getNextFocusDown() :
+                //        null;
+                ListIterator<Component> traversalIt = getComponentForm().getTabIterator(Picker.this);
+                if (traversalIt.hasNext()) {
+                    nextButton = new Button("", isTablet ? "PickerButtonTablet" : "PickerButton");
+                    // Javascript port needs to know that this button is going to try to 
+                    // focus a text field (possibly) so that it can prepare the text field
+                    // in the native event handler.  We use this client property to let it know... it
+                    // will handle the rest.
+                    nextButton.putClientProperty("$$focus", ((Form.TabIterator)traversalIt).getNext());
+                    FontImage.setMaterialIcon(nextButton, FontImage.MATERIAL_KEYBOARD_ARROW_DOWN);
+                    nextButton.addActionListener(new ActionListener() {
+
+                        @Override
+                        public void actionPerformed(ActionEvent evt) {
+                            endEditing(COMMAND_NEXT, dlg, spinner);
+                            
+                        }
+                        
+                    });
+                }
+                
+                Button prevButton = null;
+                
+                if (traversalIt.hasPrevious()) {
+                    prevButton = new Button("", isTablet ? "PickerButtonTablet" : "PickerButton");
+                    
+                    // Javascript port needs to know that this button is going to try to 
+                    // focus a text field (possibly) so that it can prepare the text field
+                    // in the native event handler.  We use this client property to let it know... it
+                    // will handle the rest.
+                    prevButton.putClientProperty("$$focus", ((Form.TabIterator)traversalIt).getPrevious());
+                    FontImage.setMaterialIcon(prevButton, FontImage.MATERIAL_KEYBOARD_ARROW_UP);
+                    prevButton.addActionListener(new ActionListener() {
+
+                        @Override
+                        public void actionPerformed(ActionEvent evt) {
+                            endEditing(COMMAND_PREV, dlg, spinner);
+                            
+                        }
+                        
+                    });
+                }
+                        
+                
+                Container west = new Container(BoxLayout.x());
+                $(west).selectAllStyles().setMargin(0).setPadding(0).setBorder(Border.createEmpty()).setBgTransparency(0);
+                west.add(cancelButton);
+                if (prevButton != null) {
+                    west.add(prevButton);
+                }
+                if (nextButton != null) {
+                    west.add(nextButton);
+                }
+                
+                Container buttonBar = BorderLayout.centerEastWest(null, doneButton, west);
                 buttonBar.setUIID(isTablet ? "PickerButtonBarTablet" : "PickerButtonBar");
                 dlg.getContentPane().add(BorderLayout.NORTH, buttonBar);
                 
@@ -521,6 +665,7 @@ public class Picker extends Button {
                         @Override
                         public void run() {
                             dlg.show(top, bottom, left, right);
+                            padContentPane(top, bottom, left, right);
                         }
                         
                     });
@@ -553,6 +698,41 @@ public class Picker extends Button {
         });
         updateValue();
     }
+
+    @Override
+    public void startEditingAsync() {
+        fireActionEvent(-1, -1);
+    }
+
+    @Override
+    public void stopEditing(Runnable onFinish) {
+        stopEditingCallback = onFinish;
+        Form f = this.getComponentForm();
+        if (f != null) {
+            if (f.getCurrentInputDevice() == currentInput) {
+                try {
+                    f.setCurrentInputDevice(null);
+                } catch (Throwable t) {
+                    Log.e(t);
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean isEditing() {
+        Form f = this.getComponentForm();
+        boolean out = currentInput != null &&  f != null && f.getCurrentInputDevice() == currentInput;
+        
+        return out;
+    }
+
+    @Override
+    public boolean isEditable() {
+        return isUseLightweightPopup();
+    }
+    
+    
     
     /**
      * Sets the type of the picker to one of Display.PICKER_TYPE_DATE, Display.PICKER_TYPE_DATE_AND_TIME, Display.PICKER_TYPE_STRINGS, 
@@ -650,6 +830,58 @@ public class Picker extends Button {
         updateValue();
     }
     
+    private void restoreContentPane() {
+        Form f = getComponentForm();
+        
+        if (tmpContentPaneMarginUnit != null && f != null) {
+            Container contentPane = f.getContentPane();
+            Style style = contentPane.getStyle();
+            style.setMarginUnit(tmpContentPaneMarginUnit);
+            style.setMarginBottom(tmpContentPaneBottomMargin);
+            tmpContentPaneMarginUnit=null;
+            f.revalidate();
+        }
+    }
+
+
+
+    private void padContentPane(final int top, final int bottom, final int left, final int right) {
+        final Form f = getComponentForm();
+        if (f != null) {
+            f.getAnimationManager().flushAnimation(new Runnable() {
+                public void run() {
+                    Container contentPane = f.getContentPane();
+                    Style style = contentPane.getStyle();
+                    byte[] marginUnits = style.getMarginUnit();
+                    if (marginUnits == null) {
+                        marginUnits = new byte[]{
+                                Style.UNIT_TYPE_PIXELS,
+                                Style.UNIT_TYPE_PIXELS,
+                                Style.UNIT_TYPE_PIXELS,
+                                Style.UNIT_TYPE_PIXELS
+                        };
+                    }
+                    if (tmpContentPaneMarginUnit == null) {
+                        tmpContentPaneMarginUnit = new byte[4];
+                        System.arraycopy(marginUnits, 0, tmpContentPaneMarginUnit, 0, 4);
+                        tmpContentPaneBottomMargin = style.getMarginBottom();
+                    }
+
+
+                    marginUnits[Component.BOTTOM] = Style.UNIT_TYPE_PIXELS;
+                    style.setMarginUnit(marginUnits);
+                    style.setMarginBottom(Math.max(0, contentPane.getHeight() - top));
+                    f.revalidate();
+
+                    f.scrollComponentToVisible(Picker.this);
+                }
+
+            });
+
+
+        }
+    }
+
     private void registerAsInputDevice(final InteractionDialog dlg) {
         
         final Form f = this.getComponentForm();
@@ -676,6 +908,11 @@ public class Picker extends Button {
                             @Override
                             public void run() {
                                 dlg.resize(top, bottom, left, right);
+                                padContentPane(top, bottom, left, right);
+
+
+
+
                             }
 
                         });
@@ -688,18 +925,32 @@ public class Picker extends Button {
             }
             
             try {
-                f.setCurrentInputDevice(new VirtualInputDevice() {
+                VirtualInputDevice nextInput = new VirtualInputDevice() {
 
                     @Override
                     public void close() throws Exception {
+                        currentInput = null;
                         if (sizeChanged != null) {
                             f.removeSizeChangedListener(sizeChanged);
                         }
                         if (dlg.isShowing()) {
-                            dlg.disposeToTheBottom();
-                        }
+                            restoreContentPane();
+                            dlg.disposeToTheBottom(new Runnable() {
+                                public void run() {
+                                    if (stopEditingCallback != null) {
+                                        Runnable r = stopEditingCallback;
+                                        stopEditingCallback = null;
+                                        r.run();
+                                    }
+                                }
+                            });
+                        } else {
+                            stopEditingCallback = null;
+                        } 
                     }
-                });
+                };
+                f.setCurrentInputDevice(nextInput);
+                currentInput = nextInput;
             } catch (Exception ex) {
                 Log.e(ex);
                 // Failed to edit string because the previous input device would not
@@ -708,6 +959,8 @@ public class Picker extends Button {
             }
         }
     }
+    
+    private Runnable stopEditingCallback;
     
     /**
      * Returns the String array matching the metadata
@@ -1070,4 +1323,20 @@ public class Picker extends Button {
     public Object getValue() {
         return value;
     }
+
+    private Label focusedOverlay;
+    
+    @Override
+    public void paint(Graphics g) {
+        super.paint(g); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    @Override
+    public Style getStyle() {
+        if(isEditing()) {
+            return getSelectedStyle();
+        }
+        return super.getStyle(); 
+    }
+ 
 }

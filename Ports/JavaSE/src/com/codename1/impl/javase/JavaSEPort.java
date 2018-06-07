@@ -323,30 +323,7 @@ public class JavaSEPort extends CodenameOneImplementation {
         designMode = aDesignMode;
     }
 
-    /* override no longer needed as getDeviceDensity now derive from getDeviceDPI by default
-    @Override
     public int getDeviceDensity() {
-        if(defaultPixelMilliRatio != null) {
-            
-            //if(Math.round(defaultPixelMilliRatio.doubleValue()) == 10) {
-            //    return Display.DENSITY_MEDIUM;
-            //}
-            //if(Math.round(defaultPixelMilliRatio.doubleValue()) == 20) {
-            //    return Display.DENSITY_VERY_HIGH;
-            //}
-            //System.out.println("Ratio "+defaultPixelMilliRatio.doubleValue());
-            
-            if (retinaScale > 1.5) {
-                return Display.DENSITY_VERY_HIGH;
-            } else {
-                return Display.DENSITY_MEDIUM;
-            }
-        }
-        return super.getDeviceDensity();
-    }
-    */
-    
-    public int getDeviceDPI() {
         if(defaultPixelMilliRatio != null) {
             /*
             if(Math.round(defaultPixelMilliRatio.doubleValue()) == 10) {
@@ -358,20 +335,12 @@ public class JavaSEPort extends CodenameOneImplementation {
             System.out.println("Ratio "+defaultPixelMilliRatio.doubleValue());
             */
             if (retinaScale > 1.5) {
-                return Display.DPI_XHIGH;
+                return Display.DENSITY_VERY_HIGH;
             } else {
-                return Display.DPI_MEDIUM;
+                return Display.DENSITY_MEDIUM;
             }
         }
-        return super.getDeviceDPI(); 
-    }
-    
-    
-    public int convertToPixels(int dipCount, boolean horizontal) {
-        if (pixelMilliRatio != null) {
-            return (int) Math.round(dipCount * pixelMilliRatio.doubleValue());
-        }
-        return super.convertToPixels(dipCount, horizontal);
+        return super.getDeviceDensity();
     }
       
    
@@ -926,6 +895,7 @@ public class JavaSEPort extends CodenameOneImplementation {
 
         C() {
             super(null);
+            setFocusTraversalKeysEnabled(false);
             addKeyListener(this);
             addMouseListener(this);
             addMouseWheelListener(this);
@@ -4275,6 +4245,7 @@ public class JavaSEPort extends CodenameOneImplementation {
                         });
                     }
                 };
+                
                 /*
                 ((JTextField)t).addActionListener(new ActionListener() {
 
@@ -4340,6 +4311,9 @@ public class JavaSEPort extends CodenameOneImplementation {
             pane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
             pane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
             textCmp = pane;
+        }
+        if (cmp.isRTL()) {
+            textCmp.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         }
         DefaultCaret caret = (DefaultCaret) swingT.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);            
@@ -9737,7 +9711,12 @@ public class JavaSEPort extends CodenameOneImplementation {
         return "file://home/";
     }
 
-    
+    public int convertToPixels(int dipCount, boolean horizontal) {
+        if (pixelMilliRatio != null) {
+            return (int) Math.round(dipCount * pixelMilliRatio.doubleValue());
+        }
+        return super.convertToPixels(dipCount, horizontal);
+    }
 
     private File downloadSkin(File skinDir, String url, String version, JLabel label) throws IOException {
         String fileName = url.substring(url.lastIndexOf("/"));

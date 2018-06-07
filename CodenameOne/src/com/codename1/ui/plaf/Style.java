@@ -358,15 +358,13 @@ public class Style {
      * 1 dp = 1 pixel on a 1 inch 160 pixels width device
      */
     public static final byte UNIT_TYPE_DP = 3;
-    
-    
+        
     /**
      * Indicates the unit type for fonts in sp  
      * 1 sp = 1 pixel on a 1 inch 160 pixels width device * user accessibility font scale factor
      */
     public static final byte UNIT_TYPE_SP = 4;
     
-
 
     private int fgColor = 0x000000;
     private int bgColor = 0xFFFFFF;

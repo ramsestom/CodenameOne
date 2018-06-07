@@ -2342,8 +2342,8 @@ public final class Display extends CN1Constants {
      * @return value of the distance in "to" unit
      */
     public double convertDistance(double distance, byte from_unitCode, byte to_unitCode) {
-    	DisplayUnit from = DisplayUnit.known_units.get(from_unitCode);
-    	DisplayUnit to = DisplayUnit.known_units.get(to_unitCode);
+    	DisplayUnit from = DisplayUnit.getUnitForCode(from_unitCode);
+    	DisplayUnit to = DisplayUnit.getUnitForCode(to_unitCode);
     	return convertDistance(distance, from, to);
     }
     

@@ -19,7 +19,7 @@ public abstract class DisplayUnit {
         	return 1.0;
         }
     };
-    //This PERCENTAGE Display unit is actually a factice one not directly used for conversions (as we need to know the reference distance we have to consider to compute the percentage) but usefull for units parsing
+    //This PERCENTAGE Display unit is actually a "factice" one that can't be directly used for conversions (as we need to know the reference distance we have to consider to compute the percentage) but its is useful for units parsing and for conversions as long as a reference distance is provided
     public static final DisplayUnit PERCENTAGE = new DisplayUnit(Style.UNIT_TYPE_SCREEN_PERCENTAGE, "%", "percent", "percents") {
     	protected double conversionFactor() {
     		return 0.01; 
@@ -86,7 +86,7 @@ public abstract class DisplayUnit {
     
     public static final TreeMap<Byte, DisplayUnit> known_units = new TreeMap<Byte, DisplayUnit>();
     static {
-    	//Remark: we order them by expected usage frequency to speed up parsing tests
+    	//Remark: we order them by expected usage frequency to speed up parsing tests as much as we can
     	known_units.put(PIXEL.getCode(), 			PIXEL);
     	known_units.put(PERCENTAGE.getCode(), 		PERCENTAGE);
     	known_units.put(MILLIMETER.getCode(), 		MILLIMETER);
@@ -100,6 +100,10 @@ public abstract class DisplayUnit {
     	known_units.put(VH.getCode(),				VH);
     	known_units.put(VMIN.getCode(), 			VMIN);
     	known_units.put(VMAX.getCode(), 			VMAX);
+    }
+    
+    public static DisplayUnit getUnitForCode(byte code) {
+    	return known_units.get(code);
     }
         
     private byte code;

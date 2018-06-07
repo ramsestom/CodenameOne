@@ -3008,6 +3008,15 @@ public final class Display extends CN1Constants {
     public int getDeviceDPI() {
         return impl.getDeviceDPI();
     }
+    
+    
+    /**
+     * Returns the fonct scaling factor that can be defined by the user on some platforms
+     * to improve accessibility.
+    */
+    public double getFontScale() {
+        return impl.getFontScale();
+    }
 
     
     /**

@@ -5052,7 +5052,7 @@ public class IOSImplementation extends CodenameOneImplementation {
     private int dDensity = -1;
     
     @Override
-    protected int getDeviceDensity() {
+    public int getDeviceDensity() {
         // IMPORTANT:  If you modify this method, you MUST make the equivalent changes
         // to the getDeviceDensity() method in the Shooter project or the iOS screenshots
         // will produce slightly different results than the actual device.

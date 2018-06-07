@@ -48,6 +48,7 @@ import com.codename1.notifications.LocalNotification;
 import com.codename1.payment.Purchase;
 import com.codename1.system.CrashReport;
 import com.codename1.ui.geom.Rectangle;
+import com.codename1.ui.plaf.Style;
 import com.codename1.ui.plaf.UIManager;
 import com.codename1.ui.util.EventDispatcher;
 import com.codename1.ui.util.ImageIO;
@@ -2319,18 +2320,56 @@ public final class Display extends CN1Constants {
         impl.repaint(cmp);
     }
 
+    
+    /**
+     * Convert a distance expressed in a specific unit into a distance in another one
+     * 
+     * @param distance the distance we want to convert
+     * @param from: the unit of the distance we want to convert
+     * @param to: the unit we want to convert the distance to
+     * @return value of the distance in "to" unit
+     */
+    public double convertDistance(double distance, DisplayUnit from, DisplayUnit to) { 
+    	return from.convert(distance, to);
+    }
+        
+    /**
+     * Convert a distance expressed in a specific unit into a distance in another one
+     * 
+     * @param distance the distance we want to convert
+     * @param from_unitCode: the type code (see {@link Style} UNIT_TYPES) for the unit of the distance we want to convert
+     * @param to_unitCode: the type code for the unit we want to convert the distance to
+     * @return value of the distance in "to" unit
+     */
+    public double convertDistance(double distance, byte from_unitCode, byte to_unitCode) {
+    	DisplayUnit from = DisplayUnit.known_units.get(from_unitCode);
+    	DisplayUnit to = DisplayUnit.known_units.get(to_unitCode);
+    	return convertDistance(distance, from, to);
+    }
+    
+    /**
+     * Convert a distance expressed in a specific unit into a pixels distance
+     * 
+     * @param distance the distance we want to convert
+     * @param from: the unit of the distance we want to convert
+     * @return value of the distance in pixels
+    */
+    public int convertToPixels(double distance, DisplayUnit from) { 	
+    	return (int) convertDistance(distance, from, DisplayUnit.PIXEL);
+    }
+    
     /**
      * Converts the dips count to pixels, dips are roughly 1mm in length. This is a very rough estimate and not
      * to be relied upon
      * 
      * @param dipCount the dips that we will convert to pixels
-     * @param horizontal indicates pixels in the horizontal plane
+     * @param horizontal indicates pixels in the horizontal plane. this parameter is currently ignored as CN1 do not differentiate horizontal from vertical resolutions
      * @return value in pixels
+     * @deprecated use convertMillimetersToPixels instead
      */
     public int convertToPixels(int dipCount, boolean horizontal) {
         return impl.convertToPixels(dipCount, horizontal);
     }
-
 
     /**
      * Converts the dips count to pixels, dips are roughly 1mm in length. This is a very rough estimate and not
@@ -2338,11 +2377,51 @@ public final class Display extends CN1Constants {
      * 
      * @param dipCount the dips that we will convert to pixels
      * @return value in pixels
+     * @deprecated use convertMillimetersToPixels instead
      */
     public int convertToPixels(float dipCount) {
-        return Math.round(impl.convertToPixels((int)(dipCount * 1000), true) / 1000.0f);
+        return convertMillimetersToPixels(dipCount);
     }
     
+    /**
+     * Converts mm to pixels
+     * 
+     * @param millimeters: the mm that we will convert to pixels
+     * @return value in pixels
+     */
+    public int convertMillimetersToPixels(double millimeters) {
+    	return convertToPixels(millimeters, DisplayUnit.MILLIMETER);
+    }
+    
+    /**
+     * Convert dp count into pixels 
+     * A dp (Density-independent pixel) is a flexible unit that scale to have uniform dimension on any screen
+     * It is equal to one physical pixel on a screen with a density of 160
+     * It is a really common unit measure on Android and is the base unit of measurement for the Material Design system
+     *
+     * @param dpCount the dps that we will convert to pixels
+     * @return value in pixels
+     */
+    public int convertDPsToPixels(int dpCount) {
+        return convertToPixels(dpCount, DisplayUnit.DENSITY_PIXEL);
+    }
+    
+    /**
+    * Convert sp count into pixels. 
+    * A sp (Scalable pixel) serve the same function as a dp, but for fonts. 
+    * It is a flexible unit that scale to have uniform dimension on any screen but that also takes
+    * into account users prefered text settings for accessibility
+    * By default, it is equal to one physical pixel on a screen with a density of 160
+    * 
+    * @param spCount the sps that we will convert to pixels
+    * @param horizontal indicates pixels in the horizontal plane
+    * @return value in pixels
+    */
+    public int convertSPsToPixels(int spCount) {
+    	return convertToPixels(spCount, DisplayUnit.SCALABLE_PIXEL);
+    }
+    
+      
     
     /**
      * Checks to see if the platform supports a native image cache.

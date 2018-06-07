@@ -4247,7 +4247,8 @@ public abstract class CodenameOneImplementation {
      */
     public void browserExposeInJavaScript(PeerComponent browserPeer, Object o, String name) {
     }
-
+        
+    
     /**
      * Converts the dips count to pixels, dips are roughly 1mm in length. This is a very rough estimate and not
      * to be relied upon
@@ -4255,9 +4256,11 @@ public abstract class CodenameOneImplementation {
      * @param dipCount the dips that we will convert to pixels
      * @param horizontal indicates pixels in the horizontal plane
      * @return value in pixels
+     * @deprecated here for historical reason. Use the distance conversion methods from {@link Display} instead
      */
     public int convertToPixels(int dipCount, boolean horizontal) { 	
-    	return (int) Math.round(getDeviceDPI()/25.4*dipCount); 
+    	//return (int) Math.round(getDeviceDPI()/25.4*dipCount); 
+    	return (int) DisplayUnit.convert(dipCount, DisplayUnit.MILLIMETER, DisplayUnit.PIXEL);
     }
     
 

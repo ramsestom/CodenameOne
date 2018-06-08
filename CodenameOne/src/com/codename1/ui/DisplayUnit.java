@@ -203,7 +203,7 @@ public abstract class DisplayUnit {
      * @throws IllegalArgumentException if the conversion could not be done
      */
     public double convert(double distance, DisplayUnit unit, double reference_distance) {
-        return convert(distance, unit, this, reference_distance);
+        return convert(distance, this, unit, reference_distance);
     }
         
     /** 
@@ -270,7 +270,6 @@ public abstract class DisplayUnit {
         		result /= to.conversionFactor();
         	}
         	return result;
-            //return distance * from.conversionFactor() / to.conversionFactor();
         }
     }
 

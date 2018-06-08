@@ -463,7 +463,7 @@ public abstract class DisplayUnit {
         
         private static Distance parseDistanceElem(String dval, String dunit, DisplayUnit defaultUnit) 
         {
-        	if (dunit != null && !dunit.isEmpty()) 
+        	if ((dunit != null) && (dunit.length()>0)) 
         	{
 	        	String distunit = dunit.trim();
 	        	for (DisplayUnit unit : DisplayUnit.known_units.values()) 

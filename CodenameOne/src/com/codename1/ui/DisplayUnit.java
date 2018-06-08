@@ -1,12 +1,6 @@
 package com.codename1.ui;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.TreeMap;
-
-//import org.tbdlab.xpresspark.utils.Parsers;
-
 import com.codename1.ui.Display;
 import com.codename1.ui.plaf.Style;
 import com.codename1.util.regex.RE;

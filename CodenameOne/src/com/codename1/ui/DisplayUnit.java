@@ -131,7 +131,10 @@ public abstract class DisplayUnit {
         return names[0];
     }
     
-        
+    /**
+     * Does this unit depend from a reference distance to be computed?    
+     * @return true id depend from a reference distance to be computed
+     */
     boolean isReferenceDependant() {
     	return false;
     }

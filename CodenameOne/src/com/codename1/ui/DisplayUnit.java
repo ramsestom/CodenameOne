@@ -78,7 +78,7 @@ public abstract class DisplayUnit {
         }
     };
     
-    public static final TreeMap<Byte, DisplayUnit> known_units = new TreeMap<Byte, DisplayUnit>();
+    private static final TreeMap<Byte, DisplayUnit> known_units = new TreeMap<Byte, DisplayUnit>();
     static {
     	//Remark: we order them by expected usage frequency to speed up parsing tests as much as we can
     	known_units.put(PIXEL.getCode(), 			PIXEL);
@@ -98,6 +98,10 @@ public abstract class DisplayUnit {
     
     public static DisplayUnit getUnitForCode(byte code) {
     	return known_units.get(code);
+    }
+    
+    public static void registerNewDisplayUnit(DisplayUnit unit) {
+    	known_units.put(unit.getCode(), unit);
     }
         
     private byte code;

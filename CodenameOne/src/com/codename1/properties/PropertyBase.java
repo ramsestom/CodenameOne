@@ -160,7 +160,7 @@ public class PropertyBase<T, K> {
         return null;
     }
     
-    void setImpl(Object val) {
+    protected void setImpl(Object val) {
     }
     
     /**

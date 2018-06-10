@@ -132,7 +132,7 @@ public class Property<T, K> extends PropertyBase<T, K> {
     }
 
     @Override
-    void setImpl(Object val) {
+    protected void setImpl(Object val) {
         set((T)val);
     }
 }

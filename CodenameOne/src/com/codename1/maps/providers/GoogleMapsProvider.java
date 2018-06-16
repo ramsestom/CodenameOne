@@ -23,6 +23,11 @@
 
 package com.codename1.maps.providers;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import com.codename1.io.JSONParser;
 import com.codename1.maps.BoundingBox;
 import com.codename1.maps.Coord;
 import com.codename1.maps.Mercator;
@@ -30,6 +35,8 @@ import com.codename1.maps.Projection;
 import com.codename1.maps.ProxyHttpTile;
 import com.codename1.maps.Tile;
 import com.codename1.ui.geom.Dimension;
+import com.codename1.util.StringUtil;
+import com.codename1.util.regex.StringReader;
 
 /**
  * This is a GoogleMaps Provider https://developers.google.com/maps/documentation/staticmaps/
@@ -38,7 +45,9 @@ import com.codename1.ui.geom.Dimension;
  */
 public class GoogleMapsProvider extends TiledProvider{
 
-    /**
+	private static int tileSize = 256;
+	
+	/**
      * @return the tileSize
      */
     public static int getTileSize() {
@@ -51,15 +60,6 @@ public class GoogleMapsProvider extends TiledProvider{
     public static void setTileSize(int aTileSize) {
         tileSize = aTileSize;
     }
-    
-    private String apiKey;
-    
-    private int type;
-    
-    private String language;
-    private boolean sensor;
-    
-    private static int tileSize = 256;
     
     /**
      * This is a regular road map
@@ -77,23 +77,76 @@ public class GoogleMapsProvider extends TiledProvider{
     public static final int HYBRID = 2;
     
     /**
+     * This is a satellite + road map
+     */
+    public static final int TERRAIN = 3;
+	
+    
+    
+    private String apiKey;
+    
+    private int type;
+    private String styles;
+    
+    private String language;
+    private boolean sensor;
+   
+    
+    /**
      * Google map provider Constructor
      * @param apiKey google maps api key 
      * https://developers.google.com/maps/documentation/staticmaps/#api_key
-     */
-     public GoogleMapsProvider(String apiKey) {
+    */
+    public GoogleMapsProvider(String apiKey) {
         super("https://maps.googleapis.com/maps/api/staticmap?", new Mercator(), new Dimension(tileSize, tileSize));
         this.apiKey = apiKey;
     }
     
     
     /**
-     * Sets the map type
-     */ 
-     public void setMapType(int type){
+    * Sets the map type
+    */ 
+    public void setMapType(int type){
         this.type = type;
     }
      
+    /**
+    * get the map type
+    */ 
+    public int getMapType(){
+         return this.type;
+    }
+     
+    
+    public boolean setMapStyle(String json_styles){
+    	JSONParser json = new JSONParser();
+    	try
+    	{
+    		String styles = "";
+	    	Map<String, Object> data = json.parseJSON(new StringReader(json_styles));
+	        java.util.List<Map<String, Object>> content = (List<Map<String, Object>>)data.get("root");
+	        for(Map<String, Object> jsstyle : content) {
+	        	String style = "";
+	        	String featureType = (String)jsstyle.get("featureType");
+	        	style += "feature:"+featureType;
+	        	String elementType = (String)jsstyle.get("elementType");
+	        	style += "|element:"+elementType;
+	        	List<Map<String, Object>> stylers = (List<Map<String, Object>>) jsstyle.get("stylers");;
+	        	for(Map<String, Object> rule : stylers) {
+	        		for (String key: rule.keySet()) {
+	        			style += "|"+key+":"+(String)rule.get(key); 
+	        		}
+	        	}
+                styles += "&style="+style;
+	        }
+	        this.styles=styles;
+	        return true;
+    	}
+    	catch (Exception e) {
+    		return false;
+    	}
+    }
+    
     
     /**
      * {@inheritDoc}
@@ -139,9 +192,15 @@ public class GoogleMapsProvider extends TiledProvider{
             sb.append("&maptype=satellite");        
         }else if(type == HYBRID){
             sb.append("&maptype=hybrid");                
+        }else if(type == TERRAIN){
+            sb.append("&maptype=terrain");                
         }
         
         sb.append("&key="+apiKey);
+        
+        if (styles != null) {
+        	sb.append(styles);
+        }
         
         return new ProxyHttpTile(tileSize(), bbox, sb.toString());
     }

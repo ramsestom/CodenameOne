@@ -58,6 +58,8 @@ public class MapComponent extends Container {
 
     private Coord _center;
     private int _zoom;
+    private int _min_zoom;
+    private int _max_zoom;
     private MapProvider _map;
     private Vector _layers;
     private boolean _debugInfo = false;
@@ -163,6 +165,8 @@ public class MapComponent extends Container {
             _center = centerPosition.isProjected() ? centerPosition : _map.projection().fromWGS84(centerPosition);
         }
 
+        _min_zoom = provider.minZoomLevel();
+        _max_zoom = provider.maxZoomLevel();
         _zoom = zoomLevel;
         _layers = new Vector();
         setFocusable(false);
@@ -333,14 +337,14 @@ public class MapComponent extends Container {
             if (Math.abs(currentDis - oldDistance) > 10f) {
                 double scale = currentDis / oldDistance;
                 if (scale > 1) {
-                    if (_zoom == getProvider().maxZoomLevel()) {
+                    if (_zoom == getMaxZoomLevel()) {
                         scaleX = 0;
                         scaleY = 0;
                         oldDistance = -1;
                         return;
                     }
                 } else {
-                    if (_zoom == getProvider().minZoomLevel()) {
+                    if (_zoom == getMinZoomLevel()) {
                         scaleX = 0;
                         scaleY = 0;
                         oldDistance = -1;
@@ -797,7 +801,7 @@ public class MapComponent extends Container {
      * zoom in the map one level if possible
      */
     public void zoomIn() {
-        if (_zoom < _map.maxZoomLevel()) {
+        if (_zoom < getMaxZoomLevel()) {
             _zoom += 1;
             _needTiles = true;
         }
@@ -807,7 +811,7 @@ public class MapComponent extends Container {
      * zoom out the map one level if possible
      */
     public void zoomOut() {
-        if (_zoom > _map.minZoomLevel()) {
+        if (_zoom > getMinZoomLevel()) {
             _zoom -= 1;
             _needTiles = true;
         }
@@ -902,8 +906,6 @@ public class MapComponent extends Container {
 
     /**
      * Sets the current zoom level of the map.
-     *
-     * @return zoom level
      */
     public void setZoomLevel(int zoom) {
         if (zoom <= getMaxZoomLevel() && zoom >= getMinZoomLevel()) {
@@ -917,21 +919,36 @@ public class MapComponent extends Container {
     }
 
     /**
+     * Sets the max zoom level of the map.
+    */
+    public void setMaxZoomLevel(int zoom) {
+    	_max_zoom = zoom;
+    }
+    
+    
+    /**
      * Returns the max zoom level of the map
      *
      * @return max zoom level
      */
     public int getMaxZoomLevel() {
-        return _map.maxZoomLevel();
+        return Math.min(_max_zoom, _map.maxZoomLevel());
     }
 
+    /**
+     * Sets the min zoom level of the map.
+    */
+    public void setMinZoomLevel(int zoom) {
+    	_min_zoom = zoom;
+    }
+    
     /**
      * Returns the min zoom level of the map
      *
      * @return min zoom level
      */
     public int getMinZoomLevel() {
-        return _map.minZoomLevel();
+        return Math.max(_min_zoom, _map.minZoomLevel());
     }
 
     /**

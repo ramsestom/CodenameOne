@@ -3876,7 +3876,8 @@ hi.show();}</pre></noscript>
     }
     
     /**
-     * Opens a database or create one if not exists
+     * Opens a database or create one if not exists.  On platforms where {@link #isDatabaseCustomPathSupported() }
+     * this method can optionally accept a file path.
      * 
      * @param databaseName the name of the database
      * @return Database Object or null if not supported on the platform
@@ -3885,6 +3886,10 @@ hi.show();}</pre></noscript>
      */
     public Database openOrCreate(String databaseName) throws IOException{
         return impl.openOrCreateDB(databaseName);
+    }
+    
+    public boolean isDatabaseCustomPathSupported() {
+        return impl.isDatabaseCustomPathSupported();
     }
     
     /**

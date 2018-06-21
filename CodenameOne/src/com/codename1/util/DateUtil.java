@@ -82,5 +82,19 @@ public class DateUtil {
         return tz.useDaylightTime() && getOffset(date.getTime()) != tz.getRawOffset();
     }
     
+     
+     /**
+     * Compares two dates.
+     *
+     * @param d1: the first date
+     * @param d2: the second date
+     * @return 0 if d1 represent the same date as d2; 
+     * 		   a negative if d1 is before d2; 
+     *         a positive value otherwise.
+     */
+     public static int compare(Date d1, Date d2)
+     {
+        return (d1.getTime() < d2.getTime()) ? -1 : (d1.getTime() == d2.getTime()) ? 0 : 1;
+     }
     
 }

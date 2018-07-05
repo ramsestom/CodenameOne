@@ -52,3 +52,5 @@ node_modules
 /tests/core/build/
 /bin/
 nbproject
+/Ports/CLDC11/build/
+/Ports/CLDC11/dist/

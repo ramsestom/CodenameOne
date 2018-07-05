@@ -84,6 +84,9 @@
 extern int popoverSupported();
 
 #define INCLUDE_CN1_PUSH2
+#ifdef INCLUDE_CN1_PUSH2
+#import <UserNotifications/UserNotifications.h>
+#endif
 
 /*static JAVA_OBJECT utf8_constant = JAVA_NULL;
  JAVA_OBJECT fromNSString(NSString* str)
@@ -440,6 +443,27 @@ void com_codename1_impl_ios_IOSNative_resizeNativeTextView___int_int_int_int_int
     });
     
     POOL_END();
+}
+#ifdef INCLUDE_CN1_PUSH_2
+typedef void (^CN1PushCompletionHandlerType)();
+
+extern CN1PushCompletionHandlerType cn1PushCompletionHandler;
+int pushReceivedCount=0;
+#endif
+
+void com_codename1_impl_ios_IOSNative_firePushCompletionHandler__(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject) {
+#ifdef INCLUDE_CN1_PUSH_2
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (cn1PushCompletionHandler != nil) {
+            pushReceivedCount--;
+            if (pushReceivedCount <= 0) {
+                cn1PushCompletionHandler();
+                Block_release(cn1PushCompletionHandler);
+                cn1PushCompletionHandler = nil;
+            }
+        }
+    });
+#endif
 }
 
 #ifdef INCLUDE_CN1_BACKGROUND_FETCH
@@ -4157,43 +4181,65 @@ extern int pendingRemoteNotificationRegistrations;
 void com_codename1_impl_ios_IOSNative_registerPush__(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject) {
 #ifdef INCLUDE_CN1_PUSH2
     dispatch_async(dispatch_get_main_queue(), ^{
-        if ([[UIApplication sharedApplication] respondsToSelector:@selector(registerUserNotificationSettings:)]) {
-            NSUInteger settingsParam = (/*UIUserNotificationTypeAlert|UIUserNotificationTypeBadge|UIUserNotificationTypeSound*/ 7);
-            id categoriesParam = nil;
-            Class settings = NSClassFromString(@"UIUserNotificationSettings");
-            if (settings) {
-                // Prepare class selector
-                SEL sel = NSSelectorFromString(@"settingsForTypes:categories:");
-                
-                // Obtain a method signature of selector on UIUserNotificationSettings class
-                NSMethodSignature *signature = [settings methodSignatureForSelector:sel];
-                
-                // Create an invocation on a signature -- must be used because of primitive (enum) arguments on selector
-                NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-                invocation.selector = sel;
-                invocation.target = settings;
-                
-                // Set arguments
-                [invocation setArgument:&settingsParam atIndex:2];
-                [invocation setArgument:&categoriesParam atIndex:3];
-                
-                // Obtain an instance by firing an invocation
-                NSObject *settingsInstance;
-                [invocation invoke];
-                [invocation getReturnValue:&settingsInstance];
-                
-                // Retain an instance so it can live after quitting method and prevent crash :-)
-                CFRetain((__bridge CFTypeRef)(settingsInstance));
-                
-                // Finally call the desired method with proper settings
-                if (settingsInstance) {
-                    pendingRemoteNotificationRegistrations++;
-                    [[UIApplication sharedApplication] performSelector:NSSelectorFromString(@"registerUserNotificationSettings:") withObject:settingsInstance];
-                }
-            }
+        if (@available(iOS 10, *)) {
+            // iOS 10 ObjC code
+            pendingRemoteNotificationRegistrations++;
+            UNUserNotificationCenter* center = [UNUserNotificationCenter currentNotificationCenter];
+            [center requestAuthorizationWithOptions:(UNAuthorizationOptionAlert + UNAuthorizationOptionSound + UNAuthorizationOptionBadge)
+                completionHandler:^(BOOL granted, NSError * _Nullable error) {
+                    // Enable or disable features based on authorization.
+                if (granted) {
+                    [[UIApplication sharedApplication] registerForRemoteNotifications];
+                } else {
+                    pendingRemoteNotificationRegistrations--;
+                    NSString *msg = @"Permission to receive notifications is not granted";
+                    if (error != nil) {
+                        msg = [error localizedDescription];
+                    }
+                    JAVA_OBJECT jmsg = fromNSString(CN1_THREAD_GET_STATE_PASS_ARG [error localizedDescription]);
+                    com_codename1_impl_ios_IOSImplementation_pushRegistrationError___java_lang_String(CN1_THREAD_GET_STATE_PASS_ARG jmsg);
+                }   
+            }];
         } else {
-            [[UIApplication sharedApplication] registerForRemoteNotificationTypes:
-             (UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound | UIRemoteNotificationTypeAlert)];
+            // iOS 9 and earlier
+            if ([[UIApplication sharedApplication] respondsToSelector:@selector(registerUserNotificationSettings:)]) {
+                NSUInteger settingsParam = (/*UIUserNotificationTypeAlert|UIUserNotificationTypeBadge|UIUserNotificationTypeSound*/ 7);
+                id categoriesParam = nil;
+                Class settings = NSClassFromString(@"UIUserNotificationSettings");
+                if (settings) {
+                    // Prepare class selector
+                    SEL sel = NSSelectorFromString(@"settingsForTypes:categories:");
+
+                    // Obtain a method signature of selector on UIUserNotificationSettings class
+                    NSMethodSignature *signature = [settings methodSignatureForSelector:sel];
+
+                    // Create an invocation on a signature -- must be used because of primitive (enum) arguments on selector
+                    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+                    invocation.selector = sel;
+                    invocation.target = settings;
+
+                    // Set arguments
+                    [invocation setArgument:&settingsParam atIndex:2];
+                    [invocation setArgument:&categoriesParam atIndex:3];
+
+                    // Obtain an instance by firing an invocation
+                    NSObject *settingsInstance;
+                    [invocation invoke];
+                    [invocation getReturnValue:&settingsInstance];
+
+                    // Retain an instance so it can live after quitting method and prevent crash :-)
+                    CFRetain((__bridge CFTypeRef)(settingsInstance));
+
+                    // Finally call the desired method with proper settings
+                    if (settingsInstance) {
+                        pendingRemoteNotificationRegistrations++;
+                        [[UIApplication sharedApplication] performSelector:NSSelectorFromString(@"registerUserNotificationSettings:") withObject:settingsInstance];
+                    }
+                }
+            } else {
+                [[UIApplication sharedApplication] registerForRemoteNotificationTypes:
+                 (UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound | UIRemoteNotificationTypeAlert)];
+            }
         }
     });
 #endif
@@ -4220,6 +4266,72 @@ void com_codename1_impl_ios_IOSNative_setBadgeNumber___int(CN1_THREAD_STATE_MULT
 //#endif
 }
 
+static NSMutableArray<UNNotificationAction *>* pushActions;
+static NSMutableArray<UNNotificationAction *>* currentCategoryActions;
+static NSSet<UNNotificationCategory *>* pushCategories;
+static NSString* currentCategoryId;
+
+void com_codename1_impl_ios_IOSNative_registerPushAction___java_lang_String_java_lang_String(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_OBJECT identifier, JAVA_OBJECT title) {
+    if (@available(iOS 10, *)) {
+        if (pushActions == nil) {
+            pushActions = [[NSMutableArray alloc] init];
+        }
+        NSString *nsId = toNSString(CN1_THREAD_GET_STATE_PASS_ARG identifier);
+        NSString *nsTitle = toNSString(CN1_THREAD_GET_STATE_PASS_ARG title);
+        [pushActions addObject:[UNNotificationAction actionWithIdentifier:nsId title:nsTitle options:UNNotificationActionOptionNone]];
+    }
+ 
+}
+
+
+void com_codename1_impl_ios_IOSNative_startPushActionCategory___java_lang_String(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_OBJECT identifier) {
+    if (@available(iOS 10, *)) {
+        currentCategoryId = toNSString(CN1_THREAD_GET_STATE_PASS_ARG identifier);
+        if (currentCategoryActions != nil) {
+            [currentCategoryActions release];
+        }
+        currentCategoryActions = [[NSMutableArray alloc] init];
+    }
+
+}
+
+void com_codename1_impl_ios_IOSNative_endPushActionCategory__(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject) {
+    if (@available(iOS 10, *)) {
+        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+        UNNotificationCategory *category = [UNNotificationCategory categoryWithIdentifier:currentCategoryId actions:currentCategoryActions intentIdentifiers:@[] options:UNNotificationCategoryOptionNone];
+        if (pushCategories == nil) {
+            pushCategories = [[NSMutableSet alloc] init];
+        }
+        [pushCategories addObject:category];
+    }
+}
+
+void com_codename1_impl_ios_IOSNative_addPushActionToCategory___java_lang_String(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_OBJECT identifier) {
+    if (@available(iOS 10, *)) {
+        UNNotificationAction *action = nil;
+        NSString *nsId = toNSString(CN1_THREAD_GET_STATE_PASS_ARG identifier);
+        for (UNNotificationAction *a in pushActions) {
+            if ([a.identifier isEqualToString:nsId]) {
+                action = a;
+                break;
+            }
+        }
+        if (action == nil) {
+            NSLog(@"Could not find action with id %@ to add to category.  Skipping", nsId);
+            return;
+        }
+        [currentCategoryActions addObject:action];
+    }
+}
+
+void com_codename1_impl_ios_IOSNative_registerPushCategories__(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject) {
+    if (@available(iOS 10, *)) {
+        if (pushCategories != nil) {
+            UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+            [center setNotificationCategories:pushCategories];
+        }
+    }
+}
 
 UIImage* scaleImage(int destWidth, int destHeight, UIImage *img) {
     UIImage* scaledInstance = nil;

@@ -3154,6 +3154,17 @@ public class JavaSEPort extends CodenameOneImplementation {
             });
     }
     
+    public static void resumeApp() {
+        Display.getInstance().callSerially(new Runnable() {
+            public void run() {
+                Executor.startApp();
+                instance.minimized = false;
+            }
+        });
+        instance.canvas.setEnabled(true);
+        pause.setText("Pause App");
+    }
+    
     File findScreenshotFile() {
         int counter = 1;
         File f = new File(System.getProperty("user.home"), "CodenameOne Screenshot " + counter + ".png");
@@ -3716,12 +3727,12 @@ public class JavaSEPort extends CodenameOneImplementation {
     public void init(Object m) {
         inInit = true;
 
-        File updater = new File(System.getProperty("user.home") + File.separator + ".codenameone" + File.separator + "UpdateCodenameOne.jar");
+/*        File updater = new File(System.getProperty("user.home") + File.separator + ".codenameone" + File.separator + "UpdateCodenameOne.jar");
         if(!updater.exists()) {
             System.out.println("******************************************************************************");
             System.out.println("* It seems that you are using an old plugin version please upate to the latest plugin and invoke Codename One -> Codename One Settings -> Basic -> Update Client Libs");
             System.out.println("******************************************************************************");
-        }
+        }*/
                 
         Preferences pref = Preferences.userNodeForPackage(JavaSEPort.class);
         boolean desktopSkin = pref.getBoolean("desktopSkin", false);
@@ -8309,6 +8320,20 @@ public class JavaSEPort extends CodenameOneImplementation {
         }
     }
 
+    private boolean richPushBuildHintsChecked;
+    
+    public void checkRichPushBuildHints() {
+        if (!richPushBuildHintsChecked) {
+            richPushBuildHintsChecked = true;
+            Map<String, String> m = Display.getInstance().getProjectBuildHints();
+            if(m != null) {
+                if(!m.containsKey("ios.useNotificationServiceExtension")) {
+                    Display.getInstance().setProjectBuildHint("ios.useNotificationServiceExtension", "true");
+                }
+            }
+        }
+    }
+    
     private boolean cameraUsageDescriptionChecked;
     
     private void checkCameraUsageDescription() {
@@ -8447,9 +8472,13 @@ public class JavaSEPort extends CodenameOneImplementation {
                             } else {
                                 ext= imageTypes[0];
                             }
-                            File tmp = File.createTempFile("temp", "." + ext);
-                            tmp.deleteOnExit();
-                            copyFile(selected, tmp);
+                            File tmp = selected;
+                            if (!"true".equals(Display.getInstance().getProperty("openGallery.openFilesInPlace", "false"))) {
+                                tmp = File.createTempFile("temp", "." + ext);
+                                tmp.deleteOnExit();
+                                copyFile(selected, tmp);
+                            }
+                            
                             result = new com.codename1.ui.events.ActionEvent("file://" + tmp.getAbsolutePath().replace('\\', '/'));
                         } catch(IOException err) {
                             err.printStackTrace();

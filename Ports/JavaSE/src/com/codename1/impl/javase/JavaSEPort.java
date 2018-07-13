@@ -4262,7 +4262,7 @@ public class JavaSEPort extends CodenameOneImplementation {
         javax.swing.text.JTextComponent swingT;
         if (((com.codename1.ui.TextArea)cmp).isSingleLineTextArea()) {
             JTextComponent t;
-            if(isDesktop() && (constraint & TextArea.PASSWORD) == TextArea.PASSWORD) {
+            if((constraint & TextArea.PASSWORD) == TextArea.PASSWORD) {
                 t = new JPasswordField() {
                     public void repaint(long tm, int x, int y, int width, int height) {
                         Display.getInstance().callSerially(new Runnable() {
@@ -8540,6 +8540,7 @@ public class JavaSEPort extends CodenameOneImplementation {
 
                 @Override
                 public void run() {
+                    playing = false;
                     fireCompletionHandlers();
                 }
                 

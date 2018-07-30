@@ -1487,6 +1487,7 @@ public final class Display extends CN1Constants {
         if (isTextEditing(cmp)) {
             return;
         }
+        cmp.requestFocus();
         if (cmp instanceof TextArea) {
             ((TextArea)cmp).setSuppressActionEvent(false);
         }

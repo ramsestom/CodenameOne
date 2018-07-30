@@ -75,6 +75,25 @@ import java.util.ListIterator;
  * @author Shai Almog
  */
 public class Picker extends Button {
+
+    /**
+     * Whether useLightweightPopup should default to true, this can be set via
+     * the theme constant {@code lightweightPickerBool}
+     * @return the defaultUseLightweightPopup
+     */
+    public static boolean isDefaultUseLightweightPopup() {
+        return defaultUseLightweightPopup;
+    }
+
+    /**
+     * Whether useLightweightPopup should default to true, this can be set via
+     * the theme constant {@code lightweightPickerBool}
+     * @param aDefaultUseLightweightPopup the defaultUseLightweightPopup to set
+     */
+    public static void setDefaultUseLightweightPopup(
+        boolean aDefaultUseLightweightPopup) {
+        defaultUseLightweightPopup = aDefaultUseLightweightPopup;
+    }
     private int type = Display.PICKER_TYPE_DATE;
     private Object value = new Date();
     private boolean showMeridiem;
@@ -90,6 +109,12 @@ public class Picker extends Button {
     // the popup dialog so that we can restore them when the popup is disposed.
     private byte[] tmpContentPaneMarginUnit;
     private float tmpContentPaneBottomMargin;
+
+    /**
+     * Whether useLightweightPopup should default to true, this can be set via
+     * the theme constant {@code lightweightPickerBool}
+     */
+    private static boolean defaultUseLightweightPopup;
     
     /**
      * Flag to indicate that the picker should prefer lightweight components 
@@ -156,6 +181,9 @@ public class Picker extends Button {
             // the default.  This will result in these platforms using the new Spinner3D classes
             // instead of the old Spinner classes
             useLightweightPopup = true;
+        } else {
+            defaultUseLightweightPopup = getUIManager().isThemeConstant("lightweightPickerBool", defaultUseLightweightPopup);
+            useLightweightPopup = defaultUseLightweightPopup;
         }
         addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -750,7 +778,7 @@ public class Picker extends Button {
                 }
                 break;
             case Display.PICKER_TYPE_STRINGS:
-                if(!Util.instanceofObjArray(value)) {
+                if(!Util.instanceofObjArray(value) && !(value instanceof String[])) {
                     setStrings(new String[] {" "});
                 }
                 break;
@@ -840,6 +868,16 @@ public class Picker extends Button {
             style.setMarginBottom(tmpContentPaneBottomMargin);
             tmpContentPaneMarginUnit=null;
             f.revalidate();
+            // If we remove the margin, it sometimes leaves the content pane
+            // in a negative scroll position - which leaves a gap at the top.
+            // Simulating a drag will trigger tensile drag to push the content
+            // back up to the top.
+            // See https://github.com/codenameone/CodenameOne/issues/2476
+            if (f != null && f.getContentPane() != null && f.getContentPane().getScrollY() < 0) {
+                f.getContentPane().pointerPressed(100, 100);
+                f.getContentPane().pointerDragged(100, 100);
+                f.getContentPane().pointerReleased(100, 100);
+            }
         }
     }
 
@@ -1048,7 +1086,11 @@ public class Picker extends Button {
                     } else {
                         text = "am";
                     }
-                    setText(twoDigits(hour <= 12 ? hour : hour - 12) + ":" + twoDigits(minute) + text);
+                    int cookedHour = hour <= 12 ? hour : hour - 12;
+                    if (cookedHour == 0) {
+                        cookedHour = 12;
+                    }
+                    setText(twoDigits(cookedHour) + ":" + twoDigits(minute) + text);
                 } else {
                     setText(twoDigits(hour) + ":" + twoDigits(minute));
                 }

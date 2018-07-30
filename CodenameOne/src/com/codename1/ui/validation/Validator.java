@@ -361,9 +361,6 @@ public class Validator {
      * cons).addConstraint(cmp2, otherConstraint);
      */
     public Validator addConstraint(Component cmp, Constraint... c) {
-        if (!(cmp instanceof InputComponent)) {
-            throw new IllegalArgumentException("addConstraint needs an InputComponent as first argument");
-        }
         Constraint constraint = null;
         if (c.length == 1) {
             constraint = c[0];
@@ -382,7 +379,7 @@ public class Validator {
         }
 
         // Show validation error on iPhone
-        if (UIManager.getInstance().isThemeConstant("showValidationErrorsIfNotOnTopMode", true)) {
+        if (UIManager.getInstance().isThemeConstant("showValidationErrorsIfNotOnTopMode", true) && cmp instanceof InputComponent) {
             final InputComponent inputComponent = (InputComponent) cmp;
             if (!inputComponent.isOnTopMode()) {
                 Label labelForComponent = null;
@@ -635,7 +632,10 @@ public class Validator {
      */
     protected void validate(Component cmp) {
         Object val = getComponentValue(cmp);
-        setValid(cmp, constraintList.get(cmp).isValid(val));
+        Constraint c = constraintList.get(cmp);
+        if(c != null) {
+            setValid(cmp, c.isValid(val));
+        }
     }
     
     boolean isValid(Component cmp) {
@@ -644,7 +644,11 @@ public class Validator {
             return b.booleanValue();
         }
         Object val = getComponentValue(cmp);
-        return constraintList.get(cmp).isValid(val);
+        Constraint c = constraintList.get(cmp);
+        if(c != null) {
+            return c.isValid(val);
+        }
+        return true;
     }
     
     /**

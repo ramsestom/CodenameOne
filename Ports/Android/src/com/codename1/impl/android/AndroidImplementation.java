@@ -7253,7 +7253,7 @@ public class AndroidImplementation extends CodenameOneImplementation implements 
             return;
         }
         boolean has = hasAndroidMarket();
-        if (noFallback && !has) {
+        if (!has) {
             Log.d("Codename One", "Device doesn't have Android market/google play can't register for push!");
             return;
         }

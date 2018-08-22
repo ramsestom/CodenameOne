@@ -20,28 +20,19 @@
  * Please contact Codename One through http://www.codenameone.com/ if you 
  * need additional information or have any questions.
  */
-package com.codename1.impl.android;
 
-import android.content.Intent;
+package com.codename1.util;
 
 /**
+ * Invoked when a process is completed, this is a generic interface designed to
+ * replace the {@link SuccessCallback} interface.
  *
- * @author Chen
+ * @author Shai Almog
  */
-public interface IntentResultListener {
-    
-    public int CAPTURE_IMAGE = 1;
-    public int CAPTURE_VIDEO = 2;
-    public int CAPTURE_AUDIO = 3;
-    
-    public int URI_SCHEME = 4;
-    
-    public int OPEN_GALLERY = 5;
-    public int ZOOZ_PAYMENT = 6;
-    public int OPEN_GALLERY_MULTI = 7;
-    
-    public int PAYMENT = 101;
-    
-    
-    public void onActivityResult (int requestCode, int resultCode, Intent data);
+public interface OnComplete<T> {
+    /**
+     * Invoked to indicate the process was completed
+     * @param v the value of the process
+     */
+    public void completed(T v);
 }

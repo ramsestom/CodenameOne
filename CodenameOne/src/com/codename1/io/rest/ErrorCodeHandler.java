@@ -20,28 +20,20 @@
  * Please contact Codename One through http://www.codenameone.com/ if you 
  * need additional information or have any questions.
  */
-package com.codename1.impl.android;
 
-import android.content.Intent;
+package com.codename1.io.rest;
 
 /**
+ * A generic error callback interface for an error code returned from the server
  *
- * @author Chen
+ * @author Shai Almog
  */
-public interface IntentResultListener {
-    
-    public int CAPTURE_IMAGE = 1;
-    public int CAPTURE_VIDEO = 2;
-    public int CAPTURE_AUDIO = 3;
-    
-    public int URI_SCHEME = 4;
-    
-    public int OPEN_GALLERY = 5;
-    public int ZOOZ_PAYMENT = 6;
-    public int OPEN_GALLERY_MULTI = 7;
-    
-    public int PAYMENT = 101;
-    
-    
-    public void onActivityResult (int requestCode, int resultCode, Intent data);
+public interface ErrorCodeHandler<T> {
+    /**
+     * An error callback can be invoked with a different type from the success 
+     * callback
+     * 
+     * @param errorData the data matching the error.
+     */
+    public void onError(Response<T> errorData);
 }

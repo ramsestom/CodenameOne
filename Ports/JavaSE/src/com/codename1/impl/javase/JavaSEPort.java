@@ -104,6 +104,7 @@ import com.codename1.payment.Purchase;
 import com.codename1.payment.Receipt;
 import com.codename1.ui.Accessor;
 import com.codename1.ui.BrowserComponent;
+import com.codename1.ui.CN1Constants;
 import com.codename1.ui.EncodedImage;
 import com.codename1.ui.Label;
 import com.codename1.ui.PeerComponent;
@@ -3792,6 +3793,7 @@ public class JavaSEPort extends CodenameOneImplementation {
             pref.put("skin", f);
             addSkinName(f);
         } catch (Throwable t) {
+            System.out.println("Failed loading the skin file: " + f);
             t.printStackTrace();
             Preferences pref = Preferences.userNodeForPackage(JavaSEPort.class);
             pref.remove("skin");
@@ -8394,12 +8396,47 @@ public class JavaSEPort extends CodenameOneImplementation {
     }
     
     @Override
+    public boolean isGalleryTypeSupported(int type) {
+        if (super.isGalleryTypeSupported(type)) {
+            return true;
+        }
+        switch (type) {
+            case -9999:
+            case Display.GALLERY_IMAGE_MULTI:
+            case Display.GALLERY_VIDEO_MULTI:
+            case Display.GALLERY_ALL_MULTI:
+                return true;
+        }
+        
+        return false;
+    }
+    
+    @Override
     public void openGallery(final com.codename1.ui.events.ActionListener response, int type){
         if(!checkForPermission("android.permission.WRITE_EXTERNAL_STORAGE", "This is required to browse the photos")){
             return;
         }
-        
-        if(type == Display.GALLERY_VIDEO){
+        if (!isGalleryTypeSupported(type)) {
+            throw new IllegalArgumentException("Gallery type "+type+" not supported on this platform.");
+        }
+        if (type == Display.GALLERY_IMAGE_MULTI) {
+            checkGalleryMultiselect();
+            checkPhotoLibraryUsageDescription();
+            captureMulti(response, imageExtensions, getGlobsForExtensions(imageExtensions, ";"));
+        }else if(type == Display.GALLERY_VIDEO_MULTI){
+            checkGalleryMultiselect();
+            checkAppleMusicUsageDescription();
+            captureMulti(response, videoExtensions, getGlobsForExtensions(videoExtensions, ";"));
+        }else if(type == Display.GALLERY_ALL_MULTI) {
+            checkGalleryMultiselect();
+            checkPhotoLibraryUsageDescription();
+            checkAppleMusicUsageDescription();
+            String[] exts = new String[videoExtensions.length+imageExtensions.length];
+            System.arraycopy(videoExtensions, 0, exts,0, videoExtensions.length);
+            System.arraycopy(imageExtensions, 0, exts, videoExtensions.length, imageExtensions.length);
+            captureMulti(response, exts, getGlobsForExtensions(exts, ";"));
+        }
+        else if(type == Display.GALLERY_VIDEO){
             checkAppleMusicUsageDescription();
             capture(response, videoExtensions, getGlobsForExtensions(videoExtensions, ";"));
         }else if(type == Display.GALLERY_IMAGE){
@@ -8449,6 +8486,21 @@ public class JavaSEPort extends CodenameOneImplementation {
             }
         }
     }
+    
+    private boolean enableGalleryMultiselectChecked;
+    private void checkGalleryMultiselect() {
+        if (!enableGalleryMultiselectChecked) {
+            enableGalleryMultiselectChecked = true;
+            
+            Map<String, String> m = Display.getInstance().getProjectBuildHints();
+            if(m != null) {
+                if(!m.containsKey("ios.enableGalleryMultiselect")) {
+                    Display.getInstance().setProjectBuildHint("ios.enableGalleryMultiselect", "true");
+                }
+            }
+        }
+    }
+    
     
     private boolean contactsUsageDescriptionChecked;
     
@@ -8556,6 +8608,57 @@ public class JavaSEPort extends CodenameOneImplementation {
         capture(response, new String[] {"png", "jpg", "jpeg"}, "*.png;*.jpg;*.jpeg");
     }
     
+    private void captureMulti(final com.codename1.ui.events.ActionListener response, final String[] imageTypes, final String desc) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                File[] selectedFiles = pickFiles(imageTypes, desc, true);
+                ArrayList<String> resultList = new ArrayList<String>();
+                com.codename1.ui.events.ActionEvent result = null;
+                if(!exposeFilesystem) { 
+                    if (selectedFiles != null) {
+                        for (File selected : selectedFiles) {
+                            try {
+                                String ext = selected.getName();
+                                int idx = ext.lastIndexOf(".");
+                                if(idx > 0) {
+                                    ext = ext.substring(idx);
+                                } else {
+                                    ext= imageTypes[0];
+                                }
+                                File tmp = selected;
+                                if (!"true".equals(Display.getInstance().getProperty("openGallery.openFilesInPlace", "false"))) {
+                                    tmp = File.createTempFile("temp", "." + ext);
+                                    tmp.deleteOnExit();
+                                    copyFile(selected, tmp);
+                                }
+                                resultList.add("file://" + tmp.getAbsolutePath().replace('\\', '/'));
+                                //result = new com.codename1.ui.events.ActionEvent("file://" + tmp.getAbsolutePath().replace('\\', '/'));
+                            } catch(IOException err) {
+                                err.printStackTrace();
+                            }
+                        }
+                    } 
+                } else {
+                    if(selectedFiles != null) {
+                        for (File selected : selectedFiles) {
+                            resultList.add("file://" + selected.getAbsolutePath().replace('\\', '/'));
+                            //result = new com.codename1.ui.events.ActionEvent("file://" + selected.getAbsolutePath().replace('\\', '/'));
+                        }
+                    }
+                }
+                result = new com.codename1.ui.events.ActionEvent(resultList.toArray(new String[resultList.size()]));
+                final com.codename1.ui.events.ActionEvent finalResult = result;
+                Display.getInstance().callSerially(new Runnable() {
+
+                    public void run() {
+                        response.actionPerformed(finalResult);
+                    }
+                });
+            }
+        });
+    }
+    
     private void capture(final com.codename1.ui.events.ActionListener response, final String[] imageTypes, final String desc) {
         SwingUtilities.invokeLater(new Runnable() {
 
@@ -8619,7 +8722,16 @@ public class JavaSEPort extends CodenameOneImplementation {
         checkMicrophoneUsageDescription();
         capture(response, new String[] {"mp4", "avi", "mpg", "3gp"}, "*.mp4;*.avi;*.mpg;*.3gp");
     }
-
+    private static boolean isPlayable(String filename) {
+        try {
+            javafx.scene.media.Media media = new javafx.scene.media.Media(filename);
+        } catch (javafx.scene.media.MediaException e) {
+            if (e.getType() == javafx.scene.media.MediaException.Type.MEDIA_UNSUPPORTED) {
+                return false;
+            }
+        }
+        return true;
+    }
     
     class CodenameOneMediaPlayer implements Media {
 
@@ -8632,6 +8744,7 @@ public class JavaSEPort extends CodenameOneImplementation {
         private javafx.embed.swing.JFXPanel videoPanel;
         private JFrame frm;
         private boolean playing = false;
+        private boolean nativePlayerMode;
         
         public CodenameOneMediaPlayer(String uri, boolean isVideo, JFrame f, javafx.embed.swing.JFXPanel fx, final Runnable onCompletion) throws IOException {
             if (onCompletion != null) {
@@ -8649,9 +8762,29 @@ public class JavaSEPort extends CodenameOneImplementation {
             this.isVideo = isVideo;
             this.frm = f;
             try {
+                if (uri.startsWith("file:")) {
+                    uri = unfile(uri);
+                }
                 File fff = new File(uri);
                 if(fff.exists()) {
                     uri = fff.toURI().toURL().toExternalForm();
+                }
+                if (isVideo && !isPlayable(uri)) {
+                    // JavaFX doesn't seem to support .mov files.  But if you simply rename it
+                    // to .mp4, then it will play it  (if it is mpeg4).
+                    // So this will improve .mov files from failing to 100% of the time
+                    // to only half of the time (when it isn't an mp4)
+                    File temp = File.createTempFile("mtmp", ".mp4");
+                    temp.deleteOnExit();
+                    FileOutputStream out = new FileOutputStream(temp);
+                    byte buf[] = new byte[1024];
+                    int len = 0;
+                    InputStream stream = new URL(uri).openStream();
+                    while ((len = stream.read(buf, 0, buf.length)) > -1) {
+                        out.write(buf, 0, len);
+                    }
+                    stream.close();
+                    uri = temp.toURI().toURL().toExternalForm();
                 }
                 player = new MediaPlayer(new javafx.scene.media.Media(uri));
                 player.setOnEndOfMedia(this.onCompletion);
@@ -8779,6 +8912,35 @@ public class JavaSEPort extends CodenameOneImplementation {
         }
         
         public void play() {
+            if (isVideo && nativePlayerMode) {
+                // To simulate native player mode, we will show a form with the player.
+                final Form currForm = Display.getInstance().getCurrent();
+                Form playerForm = new Form("Video Player", new com.codename1.ui.layouts.BorderLayout()) {
+
+                    @Override
+                    protected void onShow() {
+                        player.play();
+                        playing = true;
+                    }
+                    
+                };
+                com.codename1.ui.Toolbar tb = new com.codename1.ui.Toolbar();
+                playerForm.setToolbar(tb);
+                tb.setBackCommand("Back", new com.codename1.ui.events.ActionListener<com.codename1.ui.events.ActionEvent>() {
+                    public void actionPerformed(com.codename1.ui.events.ActionEvent e) {
+                        currForm.showBack();
+                    }
+                });
+                
+                Component videoComponent = getVideoComponent();
+                if (videoComponent.getComponentForm() != null) {
+                    videoComponent.remove();
+                }
+                playerForm.addComponent(com.codename1.ui.layouts.BorderLayout.CENTER, videoComponent);
+                playerForm.show();
+                return;
+                
+            }
             player.play();
             playing = true;
         }
@@ -8864,11 +9026,12 @@ public class JavaSEPort extends CodenameOneImplementation {
 
         @Override
         public void setNativePlayerMode(boolean nativePlayer) {
+            nativePlayerMode = nativePlayer;
         }
 
         @Override
         public boolean isNativePlayerMode() {
-            return false;
+            return nativePlayerMode;
         }
 
         public void setVariable(String key, Object value) {
@@ -8913,6 +9076,10 @@ public class JavaSEPort extends CodenameOneImplementation {
             }
             return buf;
         }
+
+        
+        
+        
         
         /**
          * Paints the native component to the buffer
@@ -9086,7 +9253,8 @@ public class JavaSEPort extends CodenameOneImplementation {
 
         @Override
         protected com.codename1.ui.geom.Dimension calcPreferredSize() {
-            return new com.codename1.ui.geom.Dimension((int)(vid.getWidth()), (int)(vid.getHeight()));
+            com.codename1.ui.geom.Dimension out = new com.codename1.ui.geom.Dimension((int)(vid.getPreferredSize().width), (int)(vid.getPreferredSize().height));
+            return out;
         }
 
         @Override
@@ -9450,7 +9618,7 @@ public class JavaSEPort extends CodenameOneImplementation {
         return f;
     }
     
-    @Override
+    //@Override
     public boolean isDatabaseCustomPathSupported() {
         return true;
     }
@@ -9904,7 +10072,16 @@ public class JavaSEPort extends CodenameOneImplementation {
         return pickFile(new String[] {"png", "jpg", "jpeg"}, "*.png;*.jpg;*.jpeg");
     }
 
-    private File pickFile(final String[] types, String name) {
+    private File pickFile(String[] types, String name) {
+        File[] out = pickFiles(types, name, false);
+        if (out == null || out.length < 1) {
+            return null;
+        }
+        return out[0];
+        
+    }
+    
+    private File[] pickFiles(final String[] types, String name, boolean multipleMode) {
         FileDialog fd = new FileDialog(java.awt.Frame.getFrames()[0]);
         fd.setFilenameFilter(new FilenameFilter() {
 
@@ -9919,24 +10096,46 @@ public class JavaSEPort extends CodenameOneImplementation {
             }
         });
         fd.setFile(name);
+        if (multipleMode) {
+            fd.setMultipleMode(true);
+        }
         fd.pack();
         fd.setLocationByPlatform(true);
         fd.setVisible(true);
 
-        if (fd.getFile() != null) {
-            name = fd.getFile().toLowerCase();
-            for(String t : types) {
-                if(name.endsWith(t)) {
-                    File f = new File(fd.getDirectory(), fd.getFile());
-                    if(!f.exists()){
-                        return new File(fd.getDirectory());
-                    }else{
-                        return f;
+        if (multipleMode) {
+            File[] files = fd.getFiles();
+            ArrayList<File> out = new ArrayList<File>();
+            for (File f : files) {
+                name = f.getName().toLowerCase();
+                for (String t : types) {
+                    if (name.endsWith(t)) {
+                        if (!f.exists()) {
+                            out.add(f.getParentFile());
+                        } else {
+                            out.add(f);
+                        }
+                        break;
                     }
                 }
             }
+            return out.toArray(new File[out.size()]);
+        } else {
+            if (fd.getFile() != null) {
+                name = fd.getFile().toLowerCase();
+                for(String t : types) {
+                    if(name.endsWith(t)) {
+                        File f = new File(fd.getDirectory(), fd.getFile());
+                        if(!f.exists()){
+                            return new File[]{new File(fd.getDirectory())};
+                        }else{
+                            return new File[]{f};
+                        }
+                    }
+                }
+            }
+            return new File[0];
         }
-        return null;
     }
 
     @Override

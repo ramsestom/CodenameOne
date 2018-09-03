@@ -43,6 +43,7 @@
 #include "com_codename1_ui_Display.h"
 #include "com_codename1_ui_Component.h"
 #include "java_lang_Throwable.h"
+#include "java_lang_RuntimeException.h"
 #import "FillPolygon.h"
 #import "AudioPlayer.h"
 #import "DrawGradient.h"
@@ -2407,12 +2408,19 @@ void com_codename1_impl_ios_IOSNative_browserClearHistory___long(CN1_THREAD_STAT
 }
 
 void com_codename1_impl_ios_IOSNative_browserExecute___long_java_lang_String(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_LONG peer, JAVA_OBJECT javaScript) {
-    dispatch_sync(dispatch_get_main_queue(), ^{
+    if ([NSThread isMainThread]) {
         POOL_BEGIN();
         UIWebView* w = (BRIDGE_CAST UIWebView*)((void *)peer);
         [w stringByEvaluatingJavaScriptFromString:toNSString(CN1_THREAD_GET_STATE_PASS_ARG javaScript)];
         POOL_END();
-    });
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            POOL_BEGIN();
+            UIWebView* w = (BRIDGE_CAST UIWebView*)((void *)peer);
+            [w stringByEvaluatingJavaScriptFromString:toNSString(CN1_THREAD_GET_STATE_PASS_ARG javaScript)];
+            POOL_END();
+        });
+    }
 }
 
 void com_codename1_impl_ios_IOSNative_browserForward___long(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_LONG peer) {
@@ -2520,9 +2528,15 @@ JAVA_LONG com_codename1_impl_ios_IOSNative_createVideoComponent___java_lang_Stri
         }
         moviePlayerInstance = [[MPMoviePlayerController alloc] initWithContentURL:u];
         registerVideoCallback(CN1_THREAD_GET_STATE_PASS_ARG moviePlayerInstance, onCompletionCallbackId);
-        [moviePlayerInstance prepareToPlay];
+        moviePlayerInstance.useApplicationAudioSession = NO;
+        // prepareToPlay will cause other av sessions to be interrupted at the time that the video
+        // component is created - which is disruptive.  Better to just let it prepare to play
+        // at the time that the video is played - even if there is a delay.
+        //[moviePlayerInstance prepareToPlay];
 #ifdef AUTO_PLAY_VIDEO
         [moviePlayerInstance play];
+#else
+        moviePlayerInstance.shouldAutoplay = NO;
 #endif
         moviePlayerInstance.controlStyle = MPMovieControlStyleEmbedded;
         POOL_END();
@@ -2581,9 +2595,14 @@ JAVA_LONG com_codename1_impl_ios_IOSNative_createVideoComponent___byte_1ARRAY_in
         moviePlayerInstance = [[MPMoviePlayerController alloc] initWithContentURL:u];
         registerVideoCallback(CN1_THREAD_GET_STATE_PASS_ARG moviePlayerInstance, onCompletionCallbackId);
         moviePlayerInstance.useApplicationAudioSession = NO;
-        [moviePlayerInstance prepareToPlay];
+        // prepareToPlay will cause other av sessions to be interrupted at the time that the video
+        // component is created - which is disruptive.  Better to just let it prepare to play
+        // at the time that the video is played - even if there is a delay.
+        //[moviePlayerInstance prepareToPlay];
 #ifdef AUTO_PLAY_VIDEO
         [moviePlayerInstance play];
+#else
+        moviePlayerInstance.shouldAutoplay = NO;
 #endif
         POOL_END();
     });
@@ -2643,9 +2662,14 @@ JAVA_LONG com_codename1_impl_ios_IOSNative_createVideoComponentNSData___long_int
 //#ifndef CN1_USE_ARC
 //        [moviePlayerInstance retain];
 //#endif
-        [moviePlayerInstance prepareToPlay];
+        // prepareToPlay will cause other av sessions to be interrupted at the time that the video
+        // component is created - which is disruptive.  Better to just let it prepare to play
+        // at the time that the video is played - even if there is a delay.
+        //[moviePlayerInstance prepareToPlay];
 #ifdef AUTO_PLAY_VIDEO
         [moviePlayerInstance play];
+#else
+        moviePlayerInstance.shouldAutoplay = NO;
 #endif
         POOL_END();
     });
@@ -5557,14 +5581,22 @@ void com_codename1_impl_ios_IOSNative_zoozPurchase___double_java_lang_String_jav
 }
 
 JAVA_OBJECT com_codename1_impl_ios_IOSNative_browserExecuteAndReturnString___long_java_lang_String(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_LONG peer, JAVA_OBJECT javaScript){
-    __block JAVA_OBJECT out;
-    dispatch_sync(dispatch_get_main_queue(), ^{
+    if ([NSThread isMainThread]) {
         POOL_BEGIN();
         UIWebView* w = (BRIDGE_CAST UIWebView*)((void *)peer);
-        out = fromNSString(CN1_THREAD_GET_STATE_PASS_ARG [w stringByEvaluatingJavaScriptFromString:toNSString(CN1_THREAD_GET_STATE_PASS_ARG javaScript)]);
+        JAVA_OBJECT out = fromNSString(CN1_THREAD_GET_STATE_PASS_ARG [w stringByEvaluatingJavaScriptFromString:toNSString(CN1_THREAD_GET_STATE_PASS_ARG javaScript)]);
         POOL_END();
-    });
-    return out;
+        return out;
+    } else {
+        __block JAVA_OBJECT out;
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            POOL_BEGIN();
+            UIWebView* w = (BRIDGE_CAST UIWebView*)((void *)peer);
+            out = fromNSString(CN1_THREAD_GET_STATE_PASS_ARG [w stringByEvaluatingJavaScriptFromString:toNSString(CN1_THREAD_GET_STATE_PASS_ARG javaScript)]);
+            POOL_END();
+        });
+        return out;
+    }
 }
 
 JAVA_OBJECT java_util_TimeZone_getTimezoneId__(CN1_THREAD_STATE_SINGLE_ARG) {

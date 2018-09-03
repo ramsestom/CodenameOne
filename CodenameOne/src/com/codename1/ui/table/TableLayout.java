@@ -471,7 +471,14 @@ public class TableLayout extends Layout {
                     currentX += columnSizes[iter];
                 }
             }
-
+            
+            /*
+            System.out.println("Parent: "+parent.getWidth()+" "+pWidth);
+            System.out.println("Columns: ");
+            for(int iter = 0 ; iter < cslen ; iter++) {
+            	System.out.println("Col "+iter+": "+columnSizes[iter]);
+            }
+            */
             
          //Compute rows height and Y position
             int[] rowSizes = new int[rows];

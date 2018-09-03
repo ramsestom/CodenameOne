@@ -73,6 +73,8 @@
 #endif
 #import "com_codename1_payment_Purchase.h"
 
+//#define CN1_USE_SPLASH_SCREEN
+
 // Last touch positions.  Helpful to know on the iPad when some popover stuff
 // needs a source rect that the java API doesn't pass through.
 int CN1lastTouchX=0;
@@ -274,6 +276,20 @@ BOOL isVKBAlwaysOpen() {
 }
 
 
+void cn1_setStyleDoneButton(CN1_THREAD_STATE_MULTI_ARG UIBarButtonItem* btn) {
+    enteringNativeAllocations();
+    JAVA_OBJECT d = com_codename1_ui_Display_getInstance__();
+    JAVA_OBJECT pkey = fromNSString(threadStateData, @"ios.doneButtonColor");
+    JAVA_OBJECT pvalue = com_codename1_ui_Display_getProperty___java_lang_String_java_lang_String_R_java_lang_String(threadStateData, d, pkey, JAVA_NULL);
+    
+    if (pvalue != JAVA_NULL) {
+        NSString* nstr = toNSString(threadStateData, pvalue);
+        btn.tintColor = UIColorFromRGB([nstr intValue], 255);
+    }
+    finishedNativeAllocations();
+}
+
+
 void Java_com_codename1_impl_ios_IOSImplementation_editStringAtImpl
 (CN1_THREAD_STATE_MULTI_ARG int x, int y, int w, int h, void* font, int isSingleLine, int rows, int maxSize,
  int constraint, const char* str, int len, BOOL forceSlideUp,
@@ -464,6 +480,7 @@ void Java_com_codename1_impl_ios_IOSImplementation_editStringAtImpl
 #endif
                         buttonTitle = toNSString(CN1_THREAD_GET_STATE_PASS_ARG str);
                         doneButton = [[UIBarButtonItem alloc]initWithTitle:buttonTitle style:UIBarButtonItemStyleDone target:utf.delegate action:@selector(keyboardDoneClicked)];
+                        cn1_setStyleDoneButton(threadStateData, doneButton);
                     } else {
 #ifndef NEW_CODENAME_ONE_VM
                         str = com_codename1_ui_plaf_UIManager_localize___java_lang_String_java_lang_String(obj, fromNSString(@"next"), fromNSString(@"Next"));
@@ -472,6 +489,7 @@ void Java_com_codename1_impl_ios_IOSImplementation_editStringAtImpl
 #endif
                         buttonTitle = toNSString(CN1_THREAD_GET_STATE_PASS_ARG str);
                         doneButton = [[UIBarButtonItem alloc]initWithTitle:buttonTitle style:UIBarButtonItemStyleDone target:utf.delegate action:@selector(keyboardNextClicked)];
+                        cn1_setStyleDoneButton(threadStateData, doneButton);
                         if(isVKBAlwaysOpen() && (utf.keyboardType == UIKeyboardTypeDecimalPad
                                              || utf.keyboardType == UIKeyboardTypePhonePad
                                              || utf.keyboardType == UIKeyboardTypeNumberPad)) {
@@ -483,6 +501,7 @@ void Java_com_codename1_impl_ios_IOSImplementation_editStringAtImpl
 #endif
                             buttonTitle = toNSString(CN1_THREAD_GET_STATE_PASS_ARG str);
                             UIBarButtonItem *anotherButton = [[UIBarButtonItem alloc]initWithTitle:buttonTitle style:UIBarButtonItemStyleDone target:utf.delegate action:@selector(keyboardDoneClicked)];
+                            cn1_setStyleDoneButton(threadStateData, anotherButton);
                             itemsArray = [NSArray arrayWithObjects: flexButton, anotherButton, doneButton, nil];
 #ifndef CN1_USE_ARC
                             [anotherButton release];
@@ -554,6 +573,7 @@ void Java_com_codename1_impl_ios_IOSImplementation_editStringAtImpl
 #endif
                     buttonTitle = toNSString(CN1_THREAD_GET_STATE_PASS_ARG str);
                     doneButton = [[UIBarButtonItem alloc]initWithTitle:buttonTitle style:UIBarButtonItemStyleDone target:utv.delegate action:@selector(keyboardDoneClicked)];
+                    cn1_setStyleDoneButton(threadStateData, doneButton);
                 } else {
 #ifndef NEW_CODENAME_ONE_VM
                     str = com_codename1_ui_plaf_UIManager_localize___java_lang_String_java_lang_String(obj, fromNSString(@"next"), fromNSString(@"Next"));
@@ -562,6 +582,7 @@ void Java_com_codename1_impl_ios_IOSImplementation_editStringAtImpl
 #endif
                     buttonTitle = toNSString(CN1_THREAD_GET_STATE_PASS_ARG str);
                     doneButton = [[UIBarButtonItem alloc]initWithTitle:buttonTitle style:UIBarButtonItemStyleDone target:utv.delegate action:@selector(keyboardNextClicked)];
+                    cn1_setStyleDoneButton(threadStateData, doneButton);
                 }
                 NSArray *itemsArray = [NSArray arrayWithObjects: flexButton, doneButton, nil];
                 
@@ -1824,70 +1845,7 @@ extern int CN1transformMatrixVersion;
 extern BOOL cn1CompareMatrices(GLKMatrix4 m1, GLKMatrix4 m2);
 #endif
 
-- (void)awakeFromNib
-{
-#ifdef USE_ES2
-    if (!cn1CompareMatrices(GLKMatrix4Identity, CN1transformMatrix)) {
-        CN1transformMatrix = GLKMatrix4Identity;
-        CN1transformMatrixVersion = (CN1transformMatrixVersion+1)%10000;
-    }
-#endif
-    retinaBug = isRetinaBug();
-    if(retinaBug) {
-        scaleValue = 1;
-    } else {
-        scaleValue = [UIScreen mainScreen].scale;
-    }
-    sharedSingleton = self;
-    [self initVars];
-#ifdef USE_ES2
-    EAGLContext *aContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-#else
-    EAGLContext *aContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
-    
-    if (!aContext) {
-        aContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
-    }
-#endif
-    if (!aContext)
-        CN1Log(@"Failed to create ES context");
-    else if (![EAGLContext setCurrentContext:aContext])
-        CN1Log(@"Failed to set ES context current");
-    
-	self.context = aContext;
-#ifndef CN1_USE_ARC
-    [aContext release];
-#endif
-	
-    [(EAGLView *)self.view setContext:context];
-    [(EAGLView *)self.view setFramebuffer];
-    //self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    //self.view.autoresizesSubviews = YES;
-    
-    //    if ([context API] == kEAGLRenderingAPIOpenGLES2)
-    //        [self loadShaders];
-    
-    
-    animating = FALSE;
-    animationFrameInterval = 1;
-    self.displayLink = nil;
-    
-    const char* extensions = (const char*)glGetString(GL_EXTENSIONS);
-    drawTextureSupported = extensions == 0 || strstr(extensions, "OES_draw_texture") != 0;
-    //CN1Log(@"Draw texture extension %i", (int)drawTextureSupported);
-    
-    // register for keyboard notifications
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardWillShow:)
-                                                 name:UIKeyboardWillShowNotification
-                                               object:self.view.window];
-    // register for keyboard notifications
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardWillHide:)
-                                                 name:UIKeyboardWillHideNotification
-                                               object:self.view.window];
-    
-    //detect orientation by statusBarOrientation
+-(UIImage*)createSplashImage {
     UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
     bool isPortrait = (orientation == UIInterfaceOrientationPortrait || orientation == UIInterfaceOrientationPortraitUpsideDown);
     
@@ -1954,6 +1912,81 @@ extern BOOL cn1CompareMatrices(GLKMatrix4 m1, GLKMatrix4 m2);
             img = [UIImage imageNamed:@"Default.png"];
         }
     }
+    return img;
+}
+
+- (void)awakeFromNib
+{
+#ifdef USE_ES2
+    if (!cn1CompareMatrices(GLKMatrix4Identity, CN1transformMatrix)) {
+        CN1transformMatrix = GLKMatrix4Identity;
+        CN1transformMatrixVersion = (CN1transformMatrixVersion+1)%10000;
+    }
+#endif
+    retinaBug = isRetinaBug();
+    if(retinaBug) {
+        scaleValue = 1;
+    } else {
+        scaleValue = [UIScreen mainScreen].scale;
+    }
+    sharedSingleton = self;
+    [self initVars];
+#ifdef USE_ES2
+    EAGLContext *aContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+#else
+    EAGLContext *aContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
+    
+    if (!aContext) {
+        aContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
+    }
+#endif
+    if (!aContext)
+        CN1Log(@"Failed to create ES context");
+    else if (![EAGLContext setCurrentContext:aContext])
+        CN1Log(@"Failed to set ES context current");
+    
+	self.context = aContext;
+#ifndef CN1_USE_ARC
+    [aContext release];
+#endif
+	
+    [(EAGLView *)self.view setContext:context];
+    [(EAGLView *)self.view setFramebuffer];
+    //self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    //self.view.autoresizesSubviews = YES;
+    
+    //    if ([context API] == kEAGLRenderingAPIOpenGLES2)
+    //        [self loadShaders];
+    
+    
+    animating = FALSE;
+    animationFrameInterval = 1;
+    self.displayLink = nil;
+    
+    const char* extensions = (const char*)glGetString(GL_EXTENSIONS);
+    drawTextureSupported = extensions == 0 || strstr(extensions, "OES_draw_texture") != 0;
+    //CN1Log(@"Draw texture extension %i", (int)drawTextureSupported);
+    
+    // register for keyboard notifications
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillShow:)
+                                                 name:UIKeyboardWillShowNotification
+                                               object:self.view.window];
+    // register for keyboard notifications
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillHide:)
+                                                 name:UIKeyboardWillHideNotification
+                                               object:self.view.window];
+    
+    //detect orientation by statusBarOrientation
+    UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+    bool isPortrait = (orientation == UIInterfaceOrientationPortrait || orientation == UIInterfaceOrientationPortraitUpsideDown);
+#ifdef CN1_USE_SPLASH_SCREEN
+    UIImage *img = [self createSplashImage];
+#else
+    UIImage* img = nil;
+#endif
+    
     [self.view setMultipleTouchEnabled:YES];
     if(img != nil) {
         float scale = scaleValue;

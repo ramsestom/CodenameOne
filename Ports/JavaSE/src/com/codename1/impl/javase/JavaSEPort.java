@@ -178,6 +178,8 @@ import org.w3c.dom.NodeList;
  */
 public class JavaSEPort extends CodenameOneImplementation {
 
+    
+    
     public final static boolean IS_MAC;
     private static boolean isIOS;
     public static boolean blockNativeBrowser;
@@ -227,7 +229,7 @@ public class JavaSEPort extends CodenameOneImplementation {
                 double scaleX = tx.getScaleX(); 
                 double scaleY = tx.getScaleY(); 
                 
-                if (Math.round(scaleX) == 2 && Math.round(scaleY) == 2) {
+                if (scaleX >= 2 && scaleY >= 2) {
                     isRetina = true;
                 }
             } else {
@@ -236,7 +238,7 @@ public class JavaSEPort extends CodenameOneImplementation {
                 if (field != null) {
                     field.setAccessible(true);
                     Object scale = field.get(graphicsDevice);
-                    if (scale instanceof Integer && ((Integer) scale).intValue() == 2) {
+                    if (scale instanceof Integer && ((Integer) scale).intValue() >= 2) {
                         isRetina = true;
                     }
                 }
@@ -245,6 +247,37 @@ public class JavaSEPort extends CodenameOneImplementation {
             //e.printStackTrace();
         }
         return isRetina;
+    }
+    
+    public static double calcRetinaScale() {
+        GraphicsDevice graphicsDevice = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+
+        try {
+            if (getJavaVersion() >= 9) {
+                // JDK9 Doesn't like the old hack for getting the scale via reflection.
+                // https://bugs.openjdk.java.net/browse/JDK-8172962
+                GraphicsConfiguration graphicsConfig = graphicsDevice 
+                        .getDefaultConfiguration(); 
+
+                AffineTransform tx = graphicsConfig.getDefaultTransform(); 
+                double scaleX = tx.getScaleX(); 
+                double scaleY = tx.getScaleY(); 
+                return Math.max(1.0, Math.min(scaleX, scaleY));
+            } else {
+
+                Field field = graphicsDevice.getClass().getDeclaredField("scale");
+                if (field != null) {
+                    field.setAccessible(true);
+                    Object scale = field.get(graphicsDevice);
+                    if (scale instanceof Integer && ((Integer) scale).intValue() >= 2) {
+                        return ((Integer)scale).doubleValue();
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            //e.printStackTrace();
+        }
+        return 1.0;
     }
     
     public static double getRetinaScale() {
@@ -464,7 +497,18 @@ public class JavaSEPort extends CodenameOneImplementation {
     private static int smallFontSize = 11;
     private static int largeFontSize = 19;
     static {
-        retinaScale = isRetina() ? 2.0 : 1.0;
+        retinaScale = calcRetinaScale();
+        if (System.getProperty("cn1.retinaScale", null) != null) {
+            try {
+                retinaScale = Double.parseDouble(System.getProperty("cn1.retinaScale"));
+            } catch (Throwable t){}
+        } else if (System.getenv("CN1_RETINA_SCALE") != null) {
+            try {
+                retinaScale = Double.parseDouble(System.getenv("CN1_RETINA_SCALE"));
+            } catch (Throwable t) {}
+        }
+        System.out.println("Retina Scale: "+retinaScale);
+    
         if (retinaScale > 1.5) {
             medianFontSize = (int)(medianFontSize * retinaScale);
             smallFontSize = (int)(smallFontSize * retinaScale);
@@ -2742,6 +2786,26 @@ public class JavaSEPort extends CodenameOneImplementation {
                     new ComponentTreeInspector();
                 }
             });
+            JMenuItem appArg = new JMenuItem("Send App Argument");
+            appArg.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Executor.stopApp();
+                    JPanel pnl = new JPanel();
+                    JTextField tf = new JTextField(20);
+                    pnl.add(new JLabel("Argument to The App"));
+                    pnl.add(tf);
+                    int val = JOptionPane.showConfirmDialog(canvas, pnl, "Please Enter The Argument", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+                    if (val != JOptionPane.OK_OPTION) {
+                        Executor.startApp();
+                        return;
+                    }
+                    String arg = tf.getText();
+                    Display.getInstance().setProperty("AppArg", arg);
+                    Executor.startApp();
+                }
+            });
+            simulatorMenu.add(appArg);
             
             JMenuItem locactionSim = new JMenuItem("Location Simulation");
             locactionSim.addActionListener(new ActionListener() {
@@ -3308,6 +3372,7 @@ public class JavaSEPort extends CodenameOneImplementation {
                 }
                 Preferences pref = Preferences.userNodeForPackage(JavaSEPort.class);
                 pref.putBoolean("desktopSkin", true);
+                pref.putBoolean("uwpDesktopSkin", false);
                 String mainClass = System.getProperty("MainClass");
                 if (mainClass != null) {
                     deinitializeSync();
@@ -5917,6 +5982,19 @@ public class JavaSEPort extends CodenameOneImplementation {
         throw new RuntimeException("The file wasn't found: " + fontName);
     }
 
+    private static double fontScale=1.0;
+    
+    public static double getFontScale() {
+        return fontScale;
+    }
+    
+    
+    public static void setFontScale(double scale) {
+        fontScale = scale;
+    }
+    
+    
+    
     @Override
     public Object deriveTrueTypeFont(Object font, float size, int weight) {
         java.awt.Font fnt;
@@ -5932,10 +6010,11 @@ public class JavaSEPort extends CodenameOneImplementation {
         if ((weight & com.codename1.ui.Font.STYLE_ITALIC) == com.codename1.ui.Font.STYLE_ITALIC) {
             style = style | java.awt.Font.ITALIC;
         }
-        java.awt.Font fff = fnt.deriveFont(style, size);
+        java.awt.Font fff = fnt.deriveFont(style, (float)(size * getFontScale()));
+        
         if(Math.abs(size / 2 - fff.getSize())  < 3) {
             // retina display bug!
-            return fnt.deriveFont(style, size * 2);
+            return fnt.deriveFont(style, (float)(size * 2 * getFontScale()));
         }
         return fff;
     }
@@ -9841,12 +9920,19 @@ public class JavaSEPort extends CodenameOneImplementation {
         });
     }
 
+    private void browserExposeInJavaScriptImpl(final PeerComponent browserPeer, final Object o, final String name) {
+        ((SEBrowserComponent) browserPeer).exposeInJavaScript(o, name);
+    }
     public void browserExposeInJavaScript(final PeerComponent browserPeer, final Object o, final String name) {
+        if (Platform.isFxApplicationThread()) {
+            browserExposeInJavaScriptImpl(browserPeer, o, name);
+            return;
+        }
         Platform.runLater(new Runnable() {
 
             @Override
             public void run() {
-                ((SEBrowserComponent) browserPeer).exposeInJavaScript(o, name);
+                browserExposeInJavaScriptImpl(browserPeer, o, name);
             }
         });
     }
@@ -10161,6 +10247,13 @@ public class JavaSEPort extends CodenameOneImplementation {
     }
 
     
+    
+    public int convertToPixels(int dipCount, boolean horizontal) {
+        if (pixelMilliRatio != null) {
+            return (int) Math.round(dipCount * pixelMilliRatio.doubleValue());
+        }
+        return super.convertToPixels(dipCount, horizontal);
+    }
 
     private File downloadSkin(File skinDir, String url, String version, JLabel label) throws IOException {
         String fileName = url.substring(url.lastIndexOf("/"));
@@ -11115,4 +11208,3 @@ public class JavaSEPort extends CodenameOneImplementation {
         }
         throw new RuntimeException("Illegal state, file not found: " + cnopFile.getAbsolutePath());
    }  
-}

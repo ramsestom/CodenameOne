@@ -5987,12 +5987,10 @@ public class JavaSEPort extends CodenameOneImplementation {
     public static double getFontScale() {
         return fontScale;
     }
-    
-    
+        
     public static void setFontScale(double scale) {
         fontScale = scale;
     }
-    
     
     
     @Override
@@ -10245,16 +10243,7 @@ public class JavaSEPort extends CodenameOneImplementation {
         new File(System.getProperty("user.home") + File.separator + appHomeDir).mkdirs();
         return "file://home/";
     }
-
     
-    
-    public int convertToPixels(int dipCount, boolean horizontal) {
-        if (pixelMilliRatio != null) {
-            return (int) Math.round(dipCount * pixelMilliRatio.doubleValue());
-        }
-        return super.convertToPixels(dipCount, horizontal);
-    }
-
     private File downloadSkin(File skinDir, String url, String version, JLabel label) throws IOException {
         String fileName = url.substring(url.lastIndexOf("/"));
         File skin = new File(skinDir.getAbsolutePath() + "/" + fileName);
@@ -11207,4 +11196,5 @@ public class JavaSEPort extends CodenameOneImplementation {
             return;
         }
         throw new RuntimeException("Illegal state, file not found: " + cnopFile.getAbsolutePath());
-   }  
+   }
+}

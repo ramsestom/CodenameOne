@@ -44,7 +44,7 @@ public abstract class DisplayUnit {
     };
     public static final DisplayUnit SCALABLE_PIXEL = new DisplayUnit(Style.UNIT_TYPE_SP, "sp", "sps", "em", "rem") {
     	protected double conversionFactor() {
-    		return Display.getInstance().getDeviceDPI()/160.0*Display.getInstance().getFontScale();
+    		return Display.getInstance().getDeviceDPI()/160.0*Display.getInstance().getDeviceFontScale();
         }
     };
     public static final DisplayUnit POINT = new DisplayUnit((byte)6, "pt", "point", "points") {

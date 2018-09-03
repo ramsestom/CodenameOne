@@ -1168,7 +1168,7 @@ public class AndroidImplementation extends CodenameOneImplementation implements 
     private float fScale = -1;
     
     @Override
-    public float getFontScale() {
+    public float getDeviceFontScale() {
         if (fScale == -1) {
             fScale = getContext().getResources().getConfiguration().fontScale;
         }

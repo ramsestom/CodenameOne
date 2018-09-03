@@ -3659,7 +3659,7 @@ public abstract class CodenameOneImplementation {
     /**
      * @return the current user preference for the scaling factor for fonts, for platforms that support it
      */
-    public float getFontScale() {
+    public float getDeviceFontScale() {
     	return 1.0f;
     }
     

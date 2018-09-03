@@ -5227,7 +5227,7 @@ public class IOSImplementation extends CodenameOneImplementation {
        
     
     @Override
-    public float getFontScale() {
+    public float getDeviceFontScale() {
         return nativeInstance.fontScale();
     }
     

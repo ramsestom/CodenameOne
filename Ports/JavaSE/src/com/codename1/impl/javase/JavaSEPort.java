@@ -507,7 +507,7 @@ public class JavaSEPort extends CodenameOneImplementation {
                 retinaScale = Double.parseDouble(System.getenv("CN1_RETINA_SCALE"));
             } catch (Throwable t) {}
         }
-        System.out.println("Retina Scale: "+retinaScale);
+        //System.out.println("Retina Scale: "+retinaScale);
     
         if (retinaScale > 1.5) {
             medianFontSize = (int)(medianFontSize * retinaScale);

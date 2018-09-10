@@ -2411,7 +2411,7 @@ public class Component implements Animation, StyleListener {
      * 
      * @param g the component graphics
      */
-    void paintComponentBackground(Graphics g) {
+    protected void paintComponentBackground(Graphics g) {
         if(isFlatten()) {
             return;
         }

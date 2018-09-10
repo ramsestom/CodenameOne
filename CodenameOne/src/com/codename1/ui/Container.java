@@ -74,7 +74,7 @@ import java.util.Vector;
  */
 public class Container extends Component implements Iterable<Component>{
     protected static boolean enableLayoutOnPaint = true;
-    private Component leadComponent;
+   	private Component leadComponent;
     private Layout layout;
     private java.util.ArrayList<Component> components = new java.util.ArrayList<Component>();
     
@@ -93,7 +93,8 @@ public class Container extends Component implements Iterable<Component>{
     private java.util.Vector cmpTransitions;
     private int scrollIncrement = 20;
     private boolean blockFocus = false;
-    protected boolean dontRecurseContainer;
+    //protected boolean enableThisLayoutOnPaint = true;
+   	protected boolean dontRecurseContainer;
     private UIManager uiManager;
     
     /**
@@ -879,13 +880,13 @@ public class Container extends Component implements Iterable<Component>{
      * @param layoutAnimationSpeed the speed of the layout animation after replace  is completed
      */
     public void replaceAndWait(final Component current, final Component next, final Transition t, int layoutAnimationSpeed) {
-        enableLayoutOnPaint = false;
+        setEnableLayoutOnPaint(false);
         replaceComponents(current, next, t, true, false, null, 0, layoutAnimationSpeed, true);
         if(layoutAnimationSpeed > 0) {
             animateLayoutAndWait(layoutAnimationSpeed);
         }
-        dontRecurseContainer = false;
-        enableLayoutOnPaint = true;
+        this.setDontRecurseContainer(false);
+        setEnableLayoutOnPaint(true);
     }
 
     /**
@@ -1561,7 +1562,7 @@ public class Container extends Component implements Iterable<Component>{
      * {@inheritDoc}
      */
     public void paint(Graphics g) {
-        if(enableLayoutOnPaint) {
+        if(isEnableLayoutOnPaint()) {
             layoutContainer();
         }
         g.translate(getX(), getY());
@@ -1583,7 +1584,7 @@ public class Container extends Component implements Iterable<Component>{
             }
         }
         CodenameOneImplementation impl = Display.impl;
-        if(dontRecurseContainer) {
+        if(this.isDontRecurseContainer()) {
             for(int iter = startIter ; iter < size ; iter++) {
                 Component cmp = components.get(iter);
                 if(cmp.getClass() == Container.class) {
@@ -2546,6 +2547,33 @@ public class Container extends Component implements Iterable<Component>{
         return blockFocus;
     }
         
+    
+    
+    public static boolean isEnableLayoutOnPaint() {
+		return enableLayoutOnPaint;
+	}
+
+	public static void setEnableLayoutOnPaint(boolean enableLayoutOnPaint) {
+		Container.enableLayoutOnPaint = enableLayoutOnPaint;
+	}
+	
+	//public boolean isEnableThisLayoutOnPaint() {
+	//	return enableThisLayoutOnPaint;
+	//}
+
+	//public void setEnableThisLayoutOnPaint(boolean enableThisLayoutOnPaint) {
+	//	this.enableThisLayoutOnPaint = enableThisLayoutOnPaint;
+	//}
+
+	public boolean isDontRecurseContainer() {
+		return dontRecurseContainer;
+	}
+
+	public void setDontRecurseContainer(boolean dontRecurseContainer) {
+		this.dontRecurseContainer = dontRecurseContainer;
+	}
+    
+    
     /**
      * Animates a pending hierarchy of components into place, this effectively replaces revalidate with 
      * a more visual form of animation. This method waits until the operation is completed before returning
@@ -2823,8 +2851,8 @@ public class Container extends Component implements Iterable<Component>{
 
     private void morph(Component source, Component destination, int duration, boolean wait, Runnable onCompletion) {
         setShouldCalcPreferredSize(true);
-        enableLayoutOnPaint = false;
-        dontRecurseContainer = true;
+        setEnableLayoutOnPaint(false);
+        this.setDontRecurseContainer(true);
         int deltaX = getAbsoluteX();
         int deltaY = getAbsoluteY();
         int sourceX = source.getAbsoluteX() - deltaX;
@@ -2878,8 +2906,8 @@ public class Container extends Component implements Iterable<Component>{
      */
     private ComponentAnimation animateHierarchy(final int duration, boolean wait, int opacity, boolean add) {
         setShouldCalcPreferredSize(true);
-        enableLayoutOnPaint = false;
-        dontRecurseContainer = true;
+        setEnableLayoutOnPaint(false);
+        this.setDontRecurseContainer(true);
         Vector comps = new Vector();
         findComponentsInHierachy(comps);
         final int componentCount = comps.size();
@@ -2976,7 +3004,7 @@ public class Container extends Component implements Iterable<Component>{
      */
     private ComponentAnimation animateUnlayout(final int duration, boolean wait, int opacity, Runnable callback, boolean add) {
         setShouldCalcPreferredSize(true);
-        enableLayoutOnPaint = false;
+        setEnableLayoutOnPaint(false);
         final int componentCount = getComponentCount();
         int[] beforeX = new int[componentCount];
         int[] beforeY = new int[componentCount];
@@ -3036,7 +3064,7 @@ public class Container extends Component implements Iterable<Component>{
             return null;
         }
         setShouldCalcPreferredSize(true);
-        enableLayoutOnPaint = false;
+        setEnableLayoutOnPaint(false);
         final int componentCount = getComponentCount();
         int[] beforeX = new int[componentCount];
         int[] beforeY = new int[componentCount];
@@ -3357,8 +3385,8 @@ public class Container extends Component implements Iterable<Component>{
             }
             thisContainer.repaint();
             if(System.currentTimeMillis() - startTime >= duration) {
-                enableLayoutOnPaint = true;
-                thisContainer.dontRecurseContainer = false;
+            	setEnableLayoutOnPaint(true);
+                thisContainer.setDontRecurseContainer(false);
                 Form f = thisContainer.getComponentForm();
                 finished = true;
                 if(f == null) {

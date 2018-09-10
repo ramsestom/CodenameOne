@@ -1536,6 +1536,11 @@ public final class Display extends CN1Constants {
     boolean isNativeEditorVisible(Component c) {
         return impl.isNativeEditorVisible(c);
     }
+    
+    
+    public boolean isScrollWheeling() {
+    	return getImplementation().isScrollWheeling();
+    }
 
     /**
      * Minimizes the current application if minimization is supported by the platform (may fail).

@@ -1589,7 +1589,7 @@ public class Form extends Container {
      * is that it references a different vector that is unaffected by the user actions.
      * That is why we can dynamically register/deregister without interfering with user interaction.
      */
-    void registerAnimatedInternal(Animation cmp) {
+    public void registerAnimatedInternal(Animation cmp) {
         if (internalAnimatableComponents == null) {
             internalAnimatableComponents = new ArrayList<Animation>();
         }
@@ -1604,7 +1604,7 @@ public class Form extends Container {
      * is that it references a different vector that is unaffected by the user actions.
      * That is why we can dynamically register/deregister without interfearing with user interaction.
      */
-    void deregisterAnimatedInternal(Animation cmp) {
+    public void deregisterAnimatedInternal(Animation cmp) {
         if (internalAnimatableComponents != null) {
             internalAnimatableComponents.remove(cmp);
         }

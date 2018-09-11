@@ -1970,14 +1970,38 @@ public class Toolbar extends Container {
 
     /**
      * Adds a Command to the TitleArea on the right side.
-     *
+     * By default rightbar commands stacks from the right. 
+     * meaning that, if the TileArea already contains right commands, the new one would be displayed at their right 
+     * 
      * @param cmd a Command
      */
     public void addCommandToRightBar(Command cmd) {
+    	addCommandToRightBar(cmd, -1);
+    }
+    
+    /**
+     * Adds a Command to the TitleArea on the right side.
+     * 
+     * @param cmd a Command
+     * @param rightStack : If the TileArea already contains right commands, the new one would be displayed at their right if rightStack=true and at their left if rightStack=false 
+     
+     */
+    public void addCommandToRightBar(Command cmd, boolean rightStack) {
+    	addCommandToRightBar(cmd, rightStack?-1:0);
+    }
+    
+    
+    /**
+     * Adds a Command to the TitleArea on the right side.
+     *
+     * @param cmd a Command
+     * @param index index of this command if multiple right commands are present in the TitleArea
+     */
+    public void addCommandToRightBar(Command cmd, int index) {
         checkIfInitialized();
         cmd.putClientProperty("TitleCommand", Boolean.TRUE);
         cmd.putClientProperty("Left", null);
-        sideMenu.addCommand(cmd, 0);
+        sideMenu.addCommand(cmd, index);
     }
 
     /**
@@ -1996,14 +2020,38 @@ public class Toolbar extends Container {
 
     /**
      * Adds a Command to the TitleArea on the left side.
+     * By default leftbar commands stacks from the left. 
+     * meaning that, if the TileArea already contains left commands, the new one would be displayed at their left 
      *
      * @param cmd a Command
      */
     public void addCommandToLeftBar(Command cmd) {
+        addCommandToLeftBar(cmd, -1);
+    }
+    
+    
+    /**
+     * Adds a Command to the TitleArea on the left side.
+     * 
+     * @param cmd a Command
+     * @param leftStack : If the TileArea already contains left commands, the new one would be displayed at their left if leftStack=true and at their right if leftStack=false 
+     
+     */
+    public void addCommandToLeftBar(Command cmd, boolean leftStack) {
+    	addCommandToLeftBar(cmd, leftStack?-1:0);
+    }
+    
+    /**
+     * Adds a Command to the TitleArea on the left side.
+     *
+     * @param cmd a Command
+     * @param index index of this command if multiple left commands are present in the TitleArea
+     */
+    public void addCommandToLeftBar(Command cmd, int index) {
         checkIfInitialized();
         cmd.putClientProperty("TitleCommand", Boolean.TRUE);
         cmd.putClientProperty("Left", Boolean.TRUE);
-        sideMenu.addCommand(cmd, 0);
+        sideMenu.addCommand(cmd, index);
     }
 
     /**

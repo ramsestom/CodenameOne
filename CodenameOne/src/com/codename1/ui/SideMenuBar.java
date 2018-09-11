@@ -399,7 +399,7 @@ public class SideMenuBar extends MenuBar {
         if (rightCommands != null) {
             
             for (int i = 0; i < rightCommands.size(); i++) {
-                Command rightCommand = (Command) rightCommands.get(rightCommands.size() -1 - i);
+                Command rightCommand = (Command) rightCommands.get(i); //(Command) rightCommands.get(rightCommands.size() -1 - i); //changed so that right commands stacks from the right -> first command in the list would be left and last command would be right
                 String uiid = (String)rightCommand.getClientProperty("uiid");
                 String landscapeUiid = (String)rightCommand.getClientProperty("luiid");
                 if(uiid == null){
@@ -441,7 +441,7 @@ public class SideMenuBar extends MenuBar {
                                 }
                             }
                             if(shouldAdd){
-                                cnt.addComponent(b);
+                                cnt.addComponent(Math.min(i, cnt.getComponentCount()), b);//.addComponent(b);
                             }
                         } else {
                             if(east instanceof Button){
@@ -454,7 +454,7 @@ public class SideMenuBar extends MenuBar {
                             east.getParent().removeComponent(east);
                             Container buttons = new Container(new BoxLayout(BoxLayout.X_AXIS));
                             buttons.addComponent(east);
-                            buttons.addComponent(b);
+                            buttons.addComponent(Math.min(i, 1), b);//.addComponent(b);
                             getTitleAreaContainer().addComponent(BorderLayout.EAST, buttons);
                         }
                     }
@@ -469,7 +469,7 @@ public class SideMenuBar extends MenuBar {
     void installLeftCommands() {
         if (leftCommands != null) {
             for (int i = 0; i < leftCommands.size(); i++) {
-                Command leftCommand = (Command) leftCommands.get(leftCommands.size() -1 - i);
+                Command leftCommand = (Command) leftCommands.get(leftCommands.size() -1 - i); //left commands stacks from the left -> first command in the list would be right and last command would be left
                 String uiid = (String)leftCommand.getClientProperty("uiid");
                 String landscapeUiid = (String)leftCommand.getClientProperty("luiid");
                 if(uiid == null){
@@ -511,7 +511,7 @@ public class SideMenuBar extends MenuBar {
                                 }
                             }
                             if(shouldAdd){
-                                cnt.addComponent(b);
+                                cnt.addComponent(Math.min(i, cnt.getComponentCount()), b);//.addComponent(b);
                             }
                         } else {
                             if(west instanceof Button){
@@ -524,7 +524,7 @@ public class SideMenuBar extends MenuBar {
                             west.getParent().removeComponent(west);
                             Container buttons = new Container(new BoxLayout(BoxLayout.X_AXIS));
                             buttons.addComponent(west);
-                            buttons.addComponent(b);
+                            buttons.addComponent(Math.min(i, 1), b);//.addComponent(b);
                             getTitleAreaContainer().addComponent(BorderLayout.WEST, buttons);
                         }
                     }
@@ -597,12 +597,14 @@ public class SideMenuBar extends MenuBar {
                 if(leftCommands == null){
                     leftCommands = new java.util.ArrayList();
                 }
-                leftCommands.add(index, cmd);            
+                if (index < 0) {leftCommands.add(cmd);}
+                else {leftCommands.add(Math.min(index, leftCommands.size()), cmd);}          
             }else{
                 if(rightCommands == null){
                     rightCommands = new java.util.ArrayList();
                 }
-                rightCommands.add(index, cmd);
+                if (index < 0) {rightCommands.add(cmd);}
+                else {rightCommands.add(Math.min(index, rightCommands.size()), cmd);}
             }
             addOpenButton(cmd, false);
             installRightCommands();

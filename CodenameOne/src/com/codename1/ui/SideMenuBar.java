@@ -597,12 +597,12 @@ public class SideMenuBar extends MenuBar {
                 if(leftCommands == null){
                     leftCommands = new java.util.ArrayList();
                 }
-                leftCommands.add(0, cmd);            
+                leftCommands.add(index, cmd);            
             }else{
                 if(rightCommands == null){
                     rightCommands = new java.util.ArrayList();
                 }
-                rightCommands.add(0, cmd);
+                rightCommands.add(index, cmd);
             }
             addOpenButton(cmd, false);
             installRightCommands();

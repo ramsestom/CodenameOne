@@ -1049,7 +1049,7 @@ public class IOSImplementation extends CodenameOneImplementation {
     public Object createImage(String path) throws IOException {
         long ns;
         if(path.startsWith("file:")) {
-            ns = IOSImplementation.nativeInstance.createNSData(path);
+            ns = IOSImplementation.nativeInstance.createNSData(unfile(path));
         } else {
             ns = getResourceNSData(path);
         }
@@ -2919,6 +2919,7 @@ public class IOSImplementation extends CodenameOneImplementation {
         if (!nativeInstance.checkCameraUsage()) {
             throw new RuntimeException("Please add the ios.NSCameraUsageDescription build hint");
         }
+        gallerySelectMultiple = false;
         captureCallback = new EventDispatcher();
         captureCallback.addListener(response);
         nativeInstance.captureCamera(false);
@@ -3045,6 +3046,7 @@ public class IOSImplementation extends CodenameOneImplementation {
         if (!nativeInstance.checkCameraUsage() || !nativeInstance.checkMicrophoneUsage()) {
             throw new RuntimeException("Please add the ios.NSCameraUsageDescription and ios.NSMicrophoneUsageDescription build hints");
         }
+        gallerySelectMultiple = false;
         captureCallback = new EventDispatcher();
         captureCallback.addListener(response);
         nativeInstance.captureCamera(true);
@@ -3194,6 +3196,7 @@ public class IOSImplementation extends CodenameOneImplementation {
         private boolean fullScreen;
         private boolean embedNativeControls=true;
         private List<Runnable> completionHandlers;
+        private boolean prepareToPlay;
         
         
         
@@ -3349,6 +3352,12 @@ public class IOSImplementation extends CodenameOneImplementation {
         }
 
         public void prepare() {
+            prepareToPlay = true;
+            if(moviePlayerPeer != 0) {
+                if(isVideo) {
+                    nativeInstance.prepareVideoComponent(moviePlayerPeer);
+                }
+            }
         }
         
         @Override
@@ -3451,6 +3460,9 @@ public class IOSImplementation extends CodenameOneImplementation {
                         return new Label("Error loading video " + ex);
                     }
                 }
+            }
+            if (prepareToPlay && isVideo && !isPlaying()) {
+                prepare();
             }
             return component;
         }

@@ -237,6 +237,7 @@ public final class IOSNative {
     
     native void stopVideoComponent(long peer);
     native void pauseVideoComponent(long peer);
+    native void prepareVideoComponent(long moviePlayerPeer);
 
     native int getMediaTimeMS(long peer);
     
@@ -687,6 +688,8 @@ public final class IOSNative {
     native void firePushCompletionHandler();
 
     native boolean isMultiGallerySelectSupported();
+
+     
 
 
 

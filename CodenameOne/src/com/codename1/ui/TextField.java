@@ -1557,7 +1557,7 @@ public class TextField extends TextArea {
     /**
      * {@inheritDoc}
      */
-    void initComponentImpl() {
+    protected void initComponentImpl() {
         super.initComponentImpl();
         boolean rtl = isRTL();
         keyFwd = rtl ? Display.GAME_LEFT : Display.GAME_RIGHT;

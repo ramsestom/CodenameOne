@@ -190,7 +190,7 @@ public abstract class InputComponent extends Container {
     }
     
     @Override
-    void initComponentImpl() {
+    protected void initComponentImpl() {
         constructUI();
         super.initComponentImpl();
     }    

@@ -698,7 +698,7 @@ public class TextArea extends Component {
         return isFocusable() && getScrollDimension().getHeight() > getHeight();
     }
 
-    void deinitializeImpl() {
+    protected void deinitializeImpl() {
         super.deinitializeImpl(); 
         Display.getInstance().stopEditing(this);
     }
@@ -855,7 +855,7 @@ public class TextArea extends Component {
         this.rows = rows;
     }
     
-    void initComponentImpl() {
+    protected void initComponentImpl() {
         getRowStrings();
         super.initComponentImpl();
     }

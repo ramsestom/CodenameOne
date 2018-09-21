@@ -190,7 +190,7 @@ public class Tabs extends Container {
     /**
      * {@inheritDoc}
      */
-    void initComponentImpl() {
+    protected void initComponentImpl() {
         super.initComponentImpl();
         getComponentForm().registerAnimatedInternal(this);
         if(changeTabContainerStyleOnFocus && Display.getInstance().shouldRenderSelection()) {

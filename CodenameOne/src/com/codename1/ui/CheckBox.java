@@ -153,7 +153,7 @@ public class CheckBox extends Button {
         return super.paramString() + ", selected = " +selected;
     }
 
-    void initComponentImpl() {
+    protected void initComponentImpl() {
         super.initComponentImpl();
     }
 

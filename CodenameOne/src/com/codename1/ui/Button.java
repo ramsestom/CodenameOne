@@ -458,7 +458,7 @@ public class Button extends Label {
         repaint();
     }
 
-    void checkAnimation() {
+    protected void checkAnimation() {
         super.checkAnimation();
         if((pressedIcon != null && pressedIcon.isAnimation()) || 
             (rolloverIcon != null && rolloverIcon.isAnimation()) ||
@@ -725,7 +725,7 @@ public class Button extends Label {
     }
 
     @Override
-    void initComponentImpl() {
+    protected void initComponentImpl() {
         super.initComponentImpl(); 
         if(pressedIcon != null) {
             pressedIcon.lock();
@@ -742,7 +742,7 @@ public class Button extends Label {
     }
 
     @Override
-    void deinitializeImpl() {
+    protected void deinitializeImpl() {
         super.deinitializeImpl(); 
         if(pressedIcon != null) {
             pressedIcon.unlock();

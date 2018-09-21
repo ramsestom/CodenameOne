@@ -307,7 +307,7 @@ public class RadioButton extends Button {
         initNamedGroup();
     }
 
-    void initComponentImpl() {
+    protected void initComponentImpl() {
         super.initComponentImpl();
         initNamedGroup();
     }

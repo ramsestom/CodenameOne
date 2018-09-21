@@ -318,7 +318,7 @@ public class List<T> extends Component {
     /**
      * {@inheritDoc}
      */
-    void initComponentImpl() {
+    protected void initComponentImpl() {
         dataChanged(0, 0);
         // lazily bind listeners to prevent a memory leak in cases where models
         // are stored separately from view
@@ -346,7 +346,7 @@ public class List<T> extends Component {
     /**
      * {@inheritDoc}
      */
-    void deinitializeImpl() {
+    protected void deinitializeImpl() {
         super.deinitializeImpl();
 
         // cleanup to allow garbage collection even if the user keeps the model in

@@ -322,7 +322,7 @@ public class Label extends Component {
     /**
      * {@inheritDoc}
      */
-    void initComponentImpl() {
+    protected void initComponentImpl() {
         super.initComponentImpl();
         UIManager manager = getUIManager();
         LookAndFeel lf = manager.getLookAndFeel();
@@ -348,7 +348,7 @@ public class Label extends Component {
     /**
      * {@inheritDoc}
      */
-    void deinitializeImpl() {
+    protected void deinitializeImpl() {
         super.deinitializeImpl(); 
         Form f = getComponentForm();
         if(f != null) {
@@ -394,7 +394,7 @@ public class Label extends Component {
         repaint();
     }
     
-    void checkAnimation() {
+    protected void checkAnimation() {
         super.checkAnimation();
         if(icon != null && icon.isAnimation()) {
             Form parent = getComponentForm();

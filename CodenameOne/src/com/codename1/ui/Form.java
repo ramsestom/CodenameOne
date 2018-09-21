@@ -1953,7 +1953,7 @@ public class Form extends Container {
     /**
      * {@inheritDoc}
      */
-    void deinitializeImpl() {
+    protected void deinitializeImpl() {
         try {
             setCurrentInputDevice(null);
         } catch (Exception ex) {
@@ -1968,7 +1968,7 @@ public class Form extends Container {
     /**
      * {@inheritDoc}
      */
-    void initComponentImpl() {
+    protected void initComponentImpl() {
         super.initComponentImpl();
         dragged = null;
         if (Display.getInstance().isNativeCommands()) {

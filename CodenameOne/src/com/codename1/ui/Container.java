@@ -1104,7 +1104,7 @@ public class Container extends Component implements Iterable<Component>{
     /**
      * {@inheritDoc}
      */
-    void initComponentImpl() {
+    protected void initComponentImpl() {
         if (!isInitialized()) {
             super.initComponentImpl();
         }
@@ -1241,7 +1241,7 @@ public class Container extends Component implements Iterable<Component>{
     /**
      * Cleansup the initialization flags in the hierachy
      */
-    void deinitializeImpl() {
+    protected void deinitializeImpl() {
         super.deinitializeImpl();
         int componentCount = components.size();
         for(int iter = 0 ; iter < componentCount ; iter++) {

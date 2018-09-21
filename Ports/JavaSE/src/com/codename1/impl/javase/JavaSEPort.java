@@ -35,6 +35,7 @@ import com.codename1.ui.Form;
 import com.codename1.ui.Graphics;
 import com.codename1.ui.Image;
 import com.codename1.impl.CodenameOneImplementation;
+import com.codename1.impl.javase.graphics.BlendComposite;
 import com.codename1.ui.plaf.UIManager;
 import com.codename1.ui.util.EventDispatcher;
 import com.codename1.ui.util.Resources;
@@ -110,6 +111,7 @@ import com.codename1.ui.Label;
 import com.codename1.ui.PeerComponent;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.Transform;
+import com.codename1.ui.Graphics.BlendMode;
 import com.codename1.ui.animations.Motion;
 import com.codename1.ui.util.UITimer;
 import com.codename1.util.Callback;
@@ -5310,6 +5312,172 @@ public class JavaSEPort extends CodenameOneImplementation {
         }
         
     }
+    
+    
+    @Override
+    public void setBlendMode(Object graphics, BlendMode mode) {
+    	 checkEDT();
+         Graphics2D nativeGraphics = getGraphics(graphics);
+         Composite c = AlphaComposite.SrcOver; 
+         switch (mode) {
+         	case SRC_OVER:
+				c = AlphaComposite.SrcOver;
+				break;
+         	case ADD:
+         		c = BlendComposite.Add;
+         		break;
+         	case CLEAR:
+         		c = AlphaComposite.Clear;
+         		break;
+			case DARKEN:
+				c = BlendComposite.Darken;
+				break;
+			case DST:
+				c = AlphaComposite.Dst;
+				break;
+			case DST_ATOP:
+				c = AlphaComposite.DstAtop; 
+				break;
+			case DST_IN:
+				c = AlphaComposite.DstIn;
+				break;
+			case DST_OUT:
+				c = AlphaComposite.DstOut;
+				break;
+			case DST_OVER:
+				c = AlphaComposite.DstOver;
+				break;
+			case LIGHTEN:
+				c = BlendComposite.Lighten;
+				break;
+			case MULTIPLY:
+				c = BlendComposite.Multiply; 
+				break;
+			case OVERLAY:
+				c = BlendComposite.Overlay;
+				break;
+			case SCREEN:
+				c = BlendComposite.Screen;
+				break;
+			case SRC:
+				c = AlphaComposite.Src;
+				break;
+			case SRC_ATOP:
+				c = AlphaComposite.SrcAtop;
+				break;
+			case SRC_IN:
+				c = AlphaComposite.SrcIn;
+				break;
+			case SRC_OUT:
+				c = AlphaComposite.SrcOut;
+				break;
+			case XOR:
+				c = AlphaComposite.Xor;
+				break;
+			default:
+				c = AlphaComposite.SrcOver;
+				break;
+         		
+         }
+         nativeGraphics.setComposite(c);
+    }
+    
+    @Override
+    public boolean isBlendModeSupported(Object graphics, BlendMode mode) {
+    	return ( mode == BlendMode.SRC_OVER
+    		||	mode == BlendMode.ADD
+    		|| 	mode == BlendMode.CLEAR
+    		|| 	mode == BlendMode.DARKEN
+    		|| 	mode == BlendMode.DST
+    		|| 	mode == BlendMode.DST_ATOP
+    		|| 	mode == BlendMode.DST_IN
+    		|| 	mode == BlendMode.DST_OUT
+    		|| 	mode == BlendMode.DST_OVER
+    		|| 	mode == BlendMode.LIGHTEN
+    		|| 	mode == BlendMode.MULTIPLY
+    		|| 	mode == BlendMode.OVERLAY
+    		|| 	mode == BlendMode.SCREEN
+    		|| 	mode == BlendMode.SRC
+    		|| 	mode == BlendMode.SRC_ATOP
+    		|| 	mode == BlendMode.SRC_IN
+    		|| 	mode == BlendMode.SRC_OUT
+    		|| 	mode == BlendMode.SRC_OVER
+    		|| 	mode == BlendMode.XOR
+    	);
+    }
+    
+    
+    @Override
+    public BlendMode getBlendMode(Object graphics) {
+    	 checkEDT();
+         Graphics2D nativeGraphics = getGraphics(graphics);
+    	 Composite c = nativeGraphics.getComposite();
+    	 if (c instanceof AlphaComposite) {
+    		 AlphaComposite ac = (AlphaComposite) c;
+    		 if (ac.equals(AlphaComposite.SrcOver)) {
+    			 return BlendMode.SRC_OVER;
+    		 }
+    		 if (ac.equals(AlphaComposite.Clear)) {
+    			 return BlendMode.CLEAR;
+    		 }
+    		 if (ac.equals(AlphaComposite.Dst)) {
+    			 return BlendMode.DST;
+    		 }
+    		 if (ac.equals(AlphaComposite.DstAtop)) {
+    			 return BlendMode.DST_ATOP;
+    		 }
+    		 if (ac.equals(AlphaComposite.DstIn)) {
+    			 return BlendMode.DST_IN;
+    		 }
+    		 if (ac.equals(AlphaComposite.DstOut)) {
+    			 return BlendMode.DST_OUT;
+    		 }
+    		 if (ac.equals(AlphaComposite.DstOver)) {
+    			 return BlendMode.DST_OVER;
+    		 }
+    		 if (ac.equals(AlphaComposite.Src)) {
+    			 return BlendMode.SRC;
+    		 }
+    		 if (ac.equals(AlphaComposite.SrcAtop)) {
+    			 return BlendMode.SRC_ATOP;
+    		 }
+    		 if (ac.equals(AlphaComposite.SrcIn)) {
+    			 return BlendMode.SRC_IN;
+    		 }
+    		 if (ac.equals(AlphaComposite.SrcOut)) {
+    			 return BlendMode.SRC_OUT;
+    		 }
+    		 if (ac.equals(AlphaComposite.Xor)) {
+    			 return BlendMode.XOR;
+    		 }
+    	 }
+    	 else if (c instanceof BlendComposite) {
+    		 BlendComposite bc = (BlendComposite) c;
+    		 if (bc.equals(BlendComposite.Add)) {
+    			 return BlendMode.ADD;
+    		 }
+    		 if (bc.equals(BlendComposite.Darken)) {
+    			 return BlendMode.DARKEN;
+    		 }
+    		 if (bc.equals(BlendComposite.Lighten)) {
+    			 return BlendMode.LIGHTEN;
+    		 }
+    		 if (bc.equals(BlendComposite.Multiply)) {
+    			 return BlendMode.MULTIPLY;
+    		 }
+    		 if (bc.equals(BlendComposite.Overlay)) {
+    			 return BlendMode.OVERLAY;
+    		 }
+    		 if (bc.equals(BlendComposite.Screen)) {
+    			 return BlendMode.SCREEN;
+    		 }
+    	 }
+    	 return BlendMode.SRC_OVER; //TODO: return a BlendMode.UNKNOWN or null in this case? 
+    }
+    
+    
+    
+    
 
     private final Map<Object,LinkedList<Shape>> clipStack = new HashMap<Object,LinkedList<Shape>>();
     

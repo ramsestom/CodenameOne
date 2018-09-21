@@ -5102,7 +5102,7 @@ public class Component implements Animation, StyleListener {
         this.dragActivated = dragActivated;
     }
 
-    void checkAnimation() {
+    protected void checkAnimation() {
         Image bgImage = getStyle().getBgImage();
         if (bgImage != null && bgImage.isAnimation()) {
             Form pf = getComponentForm();
@@ -5543,7 +5543,7 @@ public class Component implements Animation, StyleListener {
     /**
      * Invoked internally to initialize and bind the component
      */
-    void initComponentImpl() {
+    protected void initComponentImpl() {
         if (!initialized) {
             initialized = true;
             UIManager manager = getUIManager();
@@ -5565,7 +5565,7 @@ public class Component implements Animation, StyleListener {
      * <p>However interactivity, animation and event tracking code can and probably
      * should be removed by this method.
      */
-    void deinitializeImpl() {
+    protected void deinitializeImpl() {
         if (isInitialized()) {
             hideNativeOverlay();
             paintLockRelease();

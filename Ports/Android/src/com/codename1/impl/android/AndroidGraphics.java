@@ -56,10 +56,13 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.graphics.Shader;
+import android.graphics.Xfermode;
 import android.view.View;
 
 import com.codename1.ui.Component;
 import com.codename1.ui.Font;
+import com.codename1.ui.Graphics;
+import com.codename1.ui.Graphics.BlendMode;
 import com.codename1.ui.Image;
 import com.codename1.ui.Label;
 import com.codename1.ui.Stroke;
@@ -78,6 +81,7 @@ class AndroidGraphics {
 
     protected Canvas canvas;
     protected Paint paint;
+    private BlendMode blendmode;
     private boolean isMutableImageGraphics;
     private CodenameOneTextPaint font;
     private Transform transform;
@@ -140,6 +144,9 @@ class AndroidGraphics {
 
     void setPaint(Paint p) {
         paint = p;
+        if (blendmode != null){
+            setBlendMode(blendmode);
+        }
     }
 
     public void drawImage(Object img, int x, int y) {
@@ -1395,6 +1402,88 @@ class AndroidGraphics {
     public int getColor() {
         return paint.getColor();
     }
+    
+    
+    public void setBlendMode(BlendMode mode) {
+        PorterDuff.Mode amode = PorterDuff.Mode.SRC_OVER;
+        switch (mode){
+            case SRC_OVER:
+                amode = PorterDuff.Mode.SRC_OVER;
+		break;
+            case ADD:
+         	amode = PorterDuff.Mode.ADD;
+         	break;
+            case CLEAR:
+         	amode = PorterDuff.Mode.CLEAR;
+         	break;
+            case DARKEN:
+		amode = PorterDuff.Mode.DARKEN;
+		break;
+            case DST:
+		amode = PorterDuff.Mode.DST;
+		break;
+            case DST_ATOP:
+                amode = PorterDuff.Mode.DST_ATOP;
+		break;
+            case DST_IN:
+		amode = PorterDuff.Mode.DST_IN;
+		break;
+            case DST_OUT:
+                amode = PorterDuff.Mode.DST_OUT;
+		break;
+            case DST_OVER:
+		amode = PorterDuff.Mode.DST_OVER;
+		break;
+            case LIGHTEN:
+		amode = PorterDuff.Mode.LIGHTEN;
+		break;
+            case MULTIPLY:
+		amode = PorterDuff.Mode.MULTIPLY;
+		break;
+            case OVERLAY:
+		amode = PorterDuff.Mode.OVERLAY;
+		break;
+            case SCREEN:
+		amode = PorterDuff.Mode.SCREEN;
+		break;
+            case SRC:
+		amode = PorterDuff.Mode.SRC;
+		break;
+            case SRC_ATOP:
+		amode = PorterDuff.Mode.SRC_ATOP;
+		break;
+            case SRC_IN:
+		amode = PorterDuff.Mode.SRC_IN;
+		break;
+            case SRC_OUT:
+		amode = PorterDuff.Mode.SRC_OUT;
+		break;
+            case XOR:
+		amode = PorterDuff.Mode.XOR;
+		break;
+            default:
+		amode = PorterDuff.Mode.SRC_OVER;
+		break;
+        }
+        blendmode = mode;
+        paint.setXfermode(new PorterDuffXfermode(amode));
+    }
+    
+    
+    public BlendMode getBlendMode() {
+        if (blendmode == null){
+            return BlendMode.SRC_OVER; //the default mode applied by android
+        }
+        return blendmode;
+        /*
+        Xfermode xmode = paint.getXfermode();
+        if (xmode != null && xmode instanceof PorterDuffXfermode){
+            PorterDuffXfermode pdxmode = (PorterDuffXfermode) xmode;
+            //TODO: pdxmode do not allow access to mode... so can't test
+        }
+        */
+    }
+    
 
     public void resetAffine() {
         getTransform().setIdentity();

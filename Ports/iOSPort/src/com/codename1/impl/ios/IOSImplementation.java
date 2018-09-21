@@ -93,6 +93,7 @@ import com.codename1.ui.Accessor;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Graphics;
+import com.codename1.ui.Graphics.BlendMode;
 import com.codename1.ui.geom.GeneralPath;
 import com.codename1.ui.Stroke;
 import com.codename1.ui.Transform;
@@ -1382,6 +1383,23 @@ public class IOSImplementation extends CodenameOneImplementation {
         ng.clipRect(x, y, width, height);
     }
 
+    
+    @Override
+    public void setBlendMode(Object graphics, BlendMode mode) {
+        ((NativeGraphics)graphics).setBlendMode(mode);
+    }
+    
+    @Override
+    public BlendMode getBlendMode(Object graphics) {
+        return ((NativeGraphics)graphics).getBlendMode();
+    }
+    
+    @Override
+    public boolean isBlendModeSupported(Object graphics, BlendMode mode) {
+    	return ((NativeGraphics)graphics).isBlendModeSupported(mode);
+    }
+    
+    
     @Override
     public boolean isTransformSupported() {
         return true;
@@ -3891,6 +3909,7 @@ public class IOSImplementation extends CodenameOneImplementation {
          * to record if the clipX, clipY, clipW, and clipH parameters need to be updated.
          */
         boolean clipDirty = true;
+        BlendMode blendMode;
 
         GeneralPath inverseClip;
         boolean inverseClipDirty=true;
@@ -4096,6 +4115,102 @@ public class IOSImplementation extends CodenameOneImplementation {
             }
             return clipH;
         }
+        
+        
+        void setBlendMode(BlendMode mode) {
+            int modecode = 0;
+            switch (mode){
+                case SRC_OVER:
+                    modecode = 0;
+                break;
+                case ADD:
+                    modecode = 27;
+                break;
+                case CLEAR:
+                    modecode = 16;
+                break;
+                case DARKEN:
+                    modecode = 4;
+                break;
+                case DST:
+                    modecode = 0; //The Destination (DST) blend mode do not exists in ios -> default to SRC_OVER
+                break;
+                case DST_ATOP:
+                    modecode = 24;
+                break;
+                case DST_IN:
+                    modecode = 22;
+                break;
+                case DST_OUT:
+                    modecode = 23;
+                break;
+                case DST_OVER:
+                    modecode = 21;
+                break;
+                case LIGHTEN:
+                    modecode = 5;
+                break;
+                case MULTIPLY:
+                    modecode = 1;
+                break;
+                case OVERLAY:
+                    modecode = 3;
+                break;
+                case SCREEN:
+                    modecode = 2;
+                break;
+                case SRC:
+                    modecode = 17;
+                break;
+                case SRC_ATOP:
+                    modecode = 20;
+                break;
+                case SRC_IN:
+                    modecode = 18;
+                break;
+                case SRC_OUT:
+                    modecode = 19;
+                break;
+                case XOR:
+                    modecode = 25;
+                break;
+                default:
+                      modecode = 0;
+                break;  
+            }
+            nativeInstance.setNativeBlendModeMutable(modecode);
+        }
+    
+        BlendMode getBlendMode() {
+            if (blendMode == null){
+                return BlendMode.SRC_OVER;
+            }
+            return blendMode;
+        }
+        
+        boolean isBlendModeSupported(BlendMode mode) {
+            return ( mode == BlendMode.SRC_OVER
+                    ||	mode == BlendMode.ADD
+                    || 	mode == BlendMode.CLEAR
+                    || 	mode == BlendMode.DARKEN
+                    || 	mode == BlendMode.DST_ATOP
+                    || 	mode == BlendMode.DST_IN
+                    || 	mode == BlendMode.DST_OUT
+                    || 	mode == BlendMode.DST_OVER
+                    || 	mode == BlendMode.LIGHTEN
+                    || 	mode == BlendMode.MULTIPLY
+                    || 	mode == BlendMode.OVERLAY
+                    || 	mode == BlendMode.SCREEN
+                    || 	mode == BlendMode.SRC
+                    || 	mode == BlendMode.SRC_ATOP
+                    || 	mode == BlendMode.SRC_IN
+                    || 	mode == BlendMode.SRC_OUT
+                    || 	mode == BlendMode.SRC_OVER
+                    || 	mode == BlendMode.XOR
+            );
+        }
+        
+        
         
         void setTransform(Transform t) {
             if (transform == null) {

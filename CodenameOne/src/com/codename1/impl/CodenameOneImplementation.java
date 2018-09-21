@@ -48,6 +48,7 @@ import com.codename1.payment.Purchase;
 import com.codename1.payment.PurchaseCallback;
 import com.codename1.push.PushCallback;
 import com.codename1.ui.*;
+import com.codename1.ui.Graphics.BlendMode;
 import com.codename1.ui.animations.Animation;
 import com.codename1.ui.animations.Transition;
 import com.codename1.ui.events.ActionEvent;
@@ -1511,8 +1512,21 @@ public abstract class CodenameOneImplementation {
      */
     public void popClip(Object graphics){
         // NOt implemented yet... need to implement.
-        
-        
+    }
+    
+    /** apply a specific BlendMode to the graphics */
+    public void setBlendMode(Object graphics, BlendMode mode) {
+    	System.out.println("Blend Mode is not supported");
+    }
+    
+    /** return the BlendMode currently applied to the graphics */
+    public BlendMode getBlendMode(Object graphics) {
+    	return BlendMode.SRC_OVER; //the default BlendMode on every platform
+    }
+    
+    
+    public boolean isBlendModeSupported(Object graphics, BlendMode mode) {
+    	return (mode == BlendMode.SRC_OVER);
     }
     
     

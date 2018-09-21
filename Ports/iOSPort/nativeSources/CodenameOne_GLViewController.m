@@ -1349,6 +1349,102 @@ void Java_com_codename1_impl_ios_IOSImplementation_setNativeClippingPolygonGloba
 }
 
 
+void Java_com_codename1_impl_ios_IOSImplementation_setBlendModeMutableImpl
+(int mode) {
+    enum CGBlendMode blendMode;
+    switch(mode){
+        case 0  :
+           blendMode = kCGBlendModeNormal; 
+        break; 
+        case 1  :
+            blendMode = kCGBlendModeMultiply;
+        break; 
+        case 2  :
+            blendMode = kCGBlendModeScreen;
+        break; 
+        case 3  :
+            blendMode = kCGBlendModeOverlay;
+        break;
+        case 4  :
+            blendMode = kCGBlendModeDarken;
+        break;
+        case 5  :
+            blendMode = kCGBlendModeLighten;
+        break;
+        case 6  :
+            blendMode = kCGBlendModeColorDodge;
+        break;
+        case 7  :
+            blendMode = kCGBlendModeColorBurn;
+        break;
+        case 8  :
+            blendMode = kCGBlendModeSoftLight;
+        break;
+        case 9  :
+            blendMode = kCGBlendModeHardLight;
+        break;
+        case 10  :
+            blendMode = kCGBlendModeDifference;
+        break;
+        case 11  :
+            blendMode = kCGBlendModeExclusion;
+        break;
+        case 12  :
+            blendMode = kCGBlendModeHue;
+        break;
+        case 13  :
+            blendMode = kCGBlendModeSaturation;
+        break;
+        case 14  :
+            blendMode = kCGBlendModeColor;
+        break;
+        case 15  :
+            blendMode = kCGBlendModeLuminosity;
+        break;
+        case 16  :
+            blendMode = kCGBlendModeClear;
+        break;
+        case 17  :
+            blendMode = kCGBlendModeCopy;
+        break;
+        case 18  :
+            blendMode = kCGBlendModeSourceIn;
+        break;
+        case 19  :
+            blendMode = kCGBlendModeSourceOut;
+        break;
+        case 20  :
+            blendMode = kCGBlendModeSourceAtop;
+        break;
+        case 21  :
+            blendMode = kCGBlendModeDestinationOver;
+        break;
+        case 22  :
+            blendMode = kCGBlendModeDestinationIn;
+        break;
+        case 23  :
+            blendMode = kCGBlendModeDestinationOut;
+        break;
+        case 24  :
+            blendMode = kCGBlendModeDestinationAtop;
+        break;
+        case 25  :
+            blendMode = kCGBlendModeXOR;
+        break;
+        case 26  :
+            blendMode = kCGBlendModePlusDarker;
+        break;
+        case 27  :
+            blendMode = kCGBlendModePlusLighter;
+        break;
+        default :
+            blendMode = kCGBlendModeNormal;
+    }
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSetBlendMode(context, blendMode);
+}
+
+
 void Java_com_codename1_impl_ios_IOSImplementation_nativeDrawLineMutableImpl
 (int color, int alpha, int x1, int y1, int x2, int y2) {
     //CN1Log(@"Java_com_codename1_impl_ios_IOSImplementation_nativeDrawLineMutableImpl started");

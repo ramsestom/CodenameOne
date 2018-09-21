@@ -590,6 +590,8 @@ public final class IOSNative {
 
     native void setNativeClippingMutable(int commandsLen, byte[] commandsArr, int pointsLen, float[] pointsArr);
 
+    native void setNativeBlendModeMutable(int mode);
+    
     native void refreshContacts();
 
     native void translatePoints(int pointSize, float tX, float tY, float tX0, float[] in, int srcPos, float[] out, int destPos, int numPoints);

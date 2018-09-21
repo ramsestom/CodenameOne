@@ -38,6 +38,46 @@ import com.codename1.ui.geom.Shape;
  */
 public final class Graphics {
     
+	public enum BlendMode{
+		/** Adds the source pixels to the destination pixels and saturates the result. */
+		ADD,
+		/** Destination pixels covered by the source are cleared to 0. */
+		CLEAR,			
+		/** Retains the smallest component of the source and destination pixels */
+		DARKEN,			
+		/** The source pixels are discarded, leaving the destination intact */
+		DST,			
+		/** Discards the destination pixels that are not covered by source pixels. Draws remaining destination pixels over source pixels. */
+		DST_ATOP,		
+		/** Keeps the destination pixels that cover source pixels, discards the remaining source and destination pixels. */
+		DST_IN,			
+		/** Keeps the destination pixels that are not covered by source pixels. Discards destination pixels that are covered by source pixels. Discards all source pixels. */
+		DST_OUT,		
+		/** The source pixels are drawn behind the destination pixels. */
+		DST_OVER,		
+		/** Retains the largest component of the source and destination pixel. */
+		LIGHTEN,		
+		/** Multiplies the source and destination pixels. */
+		MULTIPLY,		
+		/** Multiplies or screens the source and destination depending on the destination color. */
+		OVERLAY,		
+		/** Adds the source and destination pixels, then subtracts the source pixels multiplied by the destination */
+		SCREEN,			
+		/** The source pixels replace the destination pixels. */
+		SRC,			
+		/** Discards the source pixels that do not cover destination pixels. Draws remaining source pixels over destination pixels */
+		SRC_ATOP,		
+		/** Keeps the source pixels that cover the destination pixels, discards the remaining source and destination pixels */
+		SRC_IN,			
+		/** Keeps the source pixels that do not cover destination pixels. Discards source pixels that cover destination pixels. Discards all destination pixels. */
+		SRC_OUT,		
+		/** The source pixels are drawn over the destination pixels. */
+		SRC_OVER,		
+		/** Discards the source and destination pixels where source pixels cover destination pixels. Draws remaining source pixels */
+		XOR				
+	}
+		
+	
     /**
      * Flag that specifies that native peers are rendered "behind" the this 
      * graphics context.  The main difference is that drawPeerComponent() will
@@ -307,6 +347,25 @@ public final class Graphics {
         impl.popClip(nativeGraphics);
     }
 
+    
+    /** apply a specific BlendMode to this Graphics */
+    public void setBlendMode(BlendMode mode) {
+    	impl.setBlendMode(nativeGraphics, mode);
+    }
+    
+    
+    /** return the BlendMode currently applied to this Graphics */
+    public BlendMode getBlendMode() {
+        return impl.getBlendMode(nativeGraphics);
+    }
+    
+    /** return true if this BlendMode is supported on the current platform */
+    public boolean isBlendModeSupported(BlendMode mode) {
+    	 return impl.isBlendModeSupported(nativeGraphics, mode);
+    }
+    
+    
+    
     /**
      * Draws a line between the 2 X/Y coordinates
      * 

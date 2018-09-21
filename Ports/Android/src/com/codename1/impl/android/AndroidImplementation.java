@@ -131,6 +131,7 @@ import com.codename1.push.PushContent;
 import com.codename1.ui.*;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
+import com.codename1.ui.Graphics.BlendMode;
 import com.codename1.ui.animations.Animation;
 import com.codename1.ui.animations.CommonTransitions;
 import com.codename1.ui.events.ActionListener;
@@ -2405,6 +2406,42 @@ public class AndroidImplementation extends CodenameOneImplementation implements 
         return ((AndroidGraphics) graphics).getColor();
     }
 
+    
+    @Override
+    public void setBlendMode(Object graphics, BlendMode mode) {
+        ((AndroidGraphics) graphics).setBlendMode(mode);
+    }
+    
+    @Override
+    public BlendMode getBlendMode(Object graphics) {
+        return ((AndroidGraphics) graphics).getBlendMode();
+    }
+    
+    @Override
+    public boolean isBlendModeSupported(Object graphics, BlendMode mode) {
+    	return ( mode == BlendMode.SRC_OVER
+    		||	mode == BlendMode.ADD
+    		|| 	mode == BlendMode.CLEAR
+    		|| 	mode == BlendMode.DARKEN
+    		|| 	mode == BlendMode.DST
+    		|| 	mode == BlendMode.DST_ATOP
+    		|| 	mode == BlendMode.DST_IN
+    		|| 	mode == BlendMode.DST_OUT
+    		|| 	mode == BlendMode.DST_OVER
+    		|| 	mode == BlendMode.LIGHTEN
+    		|| 	mode == BlendMode.MULTIPLY
+    		|| 	mode == BlendMode.OVERLAY
+    		|| 	mode == BlendMode.SCREEN
+    		|| 	mode == BlendMode.SRC
+    		|| 	mode == BlendMode.SRC_ATOP
+    		|| 	mode == BlendMode.SRC_IN
+    		|| 	mode == BlendMode.SRC_OUT
+    		|| 	mode == BlendMode.SRC_OVER
+    		|| 	mode == BlendMode.XOR
+    	);
+    }
+    
+    
     @Override
     public int getDisplayHeight() {
         if (this.myView != null) {

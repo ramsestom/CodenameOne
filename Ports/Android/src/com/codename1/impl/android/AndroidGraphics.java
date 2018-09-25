@@ -45,10 +45,12 @@ package com.codename1.impl.android;
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
+import android.graphics.DashPathEffect;
 import android.graphics.LinearGradient;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PathEffect;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RadialGradient;
@@ -1579,12 +1581,24 @@ class AndroidGraphics {
      * @return The old stroke.
      */
     private Stroke setStroke(Stroke stroke){
-        Stroke old = new Stroke(paint.getStrokeWidth(), convertStrokeCap(paint.getStrokeCap()),  convertStrokeJoin(paint.getStrokeJoin()), paint.getStrokeMiter());
+        PathEffect ope = paint.getPathEffect();
+        float[] oldDashPattern = null;
+        float oldDashPhase = 0;
+        if (ope != null && ope instanceof AndroidDashPathEffect){
+            AndroidDashPathEffect odpe = (AndroidDashPathEffect) ope;
+            oldDashPattern = odpe.getPattern();
+            oldDashPhase = odpe.getPhase();
+        }
+        Stroke old = new Stroke(paint.getStrokeWidth(), convertStrokeCap(paint.getStrokeCap()),  convertStrokeJoin(paint.getStrokeJoin()), paint.getStrokeMiter(), oldDashPattern, oldDashPhase);
         paint.setStrokeCap(convertStrokeCap(stroke.getCapStyle()));
         paint.setStrokeJoin(convertStrokeJoin(stroke.getJoinStyle()));
         paint.setStrokeMiter(stroke.getMiterLimit());
         paint.setStrokeWidth(stroke.getLineWidth());
-
+        if (stroke.hasDashPattern()){
+            AndroidDashPathEffect dpe = new AndroidDashPathEffect(stroke.getDashPattern(), stroke.getDashPhase());
+            paint.setPathEffect(dpe);
+        }
+        
         return old;
     }
 

@@ -868,7 +868,7 @@ void com_codename1_impl_ios_IOSNative_nativeFillShapeMutable___int_int_int_byte_
     
 }
 
-void com_codename1_impl_ios_IOSNative_nativeDrawShapeMutable___int_int_int_byte_1ARRAY_int_float_1ARRAY_float_int_int_float(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_INT color, JAVA_INT alpha, JAVA_INT commandsLen, JAVA_OBJECT commandsArr, JAVA_INT pointsLen, JAVA_OBJECT pointsArr, JAVA_FLOAT lineWidth, JAVA_INT capStyle, JAVA_INT joinStyle, JAVA_FLOAT mitreLimit) {
+void com_codename1_impl_ios_IOSNative_nativeDrawShapeMutable___int_int_int_byte_1ARRAY_int_float_1ARRAY_float_int_int_float_float_1ARRAY_int_float(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_INT color, JAVA_INT alpha, JAVA_INT commandsLen, JAVA_OBJECT commandsArr, JAVA_INT pointsLen, JAVA_OBJECT pointsArr, JAVA_FLOAT lineWidth, JAVA_INT capStyle, JAVA_INT joinStyle, JAVA_FLOAT mitreLimit, JAVA_OBJECT dashPattern, JAVA_INT dashPatternCount, JAVA_FLOAT dashPhase) {
     POOL_BEGIN();
     if ([CodenameOne_GLViewController isCurrentMutableTransformSet]) {
         CGContextSaveGState(UIGraphicsGetCurrentContext());
@@ -916,6 +916,10 @@ void com_codename1_impl_ios_IOSNative_nativeDrawShapeMutable___int_int_int_byte_
     CGContextSetLineJoin(context, join);
     
     CGContextSetMiterLimit(context, mitreLimit);
+    
+    if (dashPattern && dashPatternCount>1) { 
+        CGContextSetLineDash(context, dashPhase, dashPattern, dashPatternCount);
+    }
     
     CGContextStrokePath(context);
     CGContextRestoreGState(context);
@@ -6374,7 +6378,7 @@ void com_codename1_impl_ios_IOSNative_fillConvexPolygonGlobal___float_1ARRAY_int
     POOL_END();
 }
 
-void com_codename1_impl_ios_IOSNative_drawConvexPolygonGlobal___float_1ARRAY_int_int_float_int_int_float(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_OBJECT points, JAVA_INT color, JAVA_INT alpha, JAVA_FLOAT lineWidth, JAVA_INT joinStyle, JAVA_INT capStyle, JAVA_FLOAT miterLimit)
+void com_codename1_impl_ios_IOSNative_drawConvexPolygonGlobal___float_1ARRAY_int_int_float_int_int_float_float_1ARRAY_float(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_OBJECT points, JAVA_INT color, JAVA_INT alpha, JAVA_FLOAT lineWidth, JAVA_INT joinStyle, JAVA_INT capStyle, JAVA_FLOAT miterLimit, JAVA_OBJECT dashPattern, JAVA_FLOAT dashPhase)
 {
     
 }
@@ -6383,7 +6387,7 @@ void com_codename1_impl_ios_IOSNative_drawConvexPolygonGlobal___float_1ARRAY_int
 
 
 
-JAVA_LONG com_codename1_impl_ios_IOSNative_nativePathStrokerCreate___long_float_int_int_float(JAVA_OBJECT instanceObject, JAVA_LONG consumerOutPtr, JAVA_FLOAT lineWidth, JAVA_INT capStyle, JAVA_INT joinStyle, JAVA_FLOAT miterLimit)
+JAVA_LONG com_codename1_impl_ios_IOSNative_nativePathStrokerCreate___long_float_int_int_float_float_1ARRAY_int_float(JAVA_OBJECT instanceObject, JAVA_LONG consumerOutPtr, JAVA_FLOAT lineWidth, JAVA_INT capStyle, JAVA_INT joinStyle, JAVA_FLOAT miterLimit, JAVA_OBJECT dashPattern, JAVA_INT dashPatternCount, JAVA_FLOAT dashPhase)
 {
     Stroker *stroker = (Stroker*)malloc(sizeof(Stroker));
     Stroker_init(stroker,
@@ -6392,6 +6396,7 @@ JAVA_LONG com_codename1_impl_ios_IOSNative_nativePathStrokerCreate___long_float_
                  capStyle,
                  joinStyle,
                  miterLimit
+                 //TODO: pass the dash parameters to the stroker. But need to study how to pass an array of float in jni...
                  );
     return (JAVA_LONG)stroker;
     
@@ -6402,9 +6407,9 @@ void com_codename1_impl_ios_IOSNative_nativePathStrokerCleanup___long(CN1_THREAD
     Stroker_destroy((Stroker*)ptr);
 }
 //native void nativePathStrokerReset(long ptr, float lineWidth, int capStyle, int joinStyle, float miterLimit);
-void com_codename1_impl_ios_IOSNative_nativePathStrokerReset___long_float_int_int_float(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_LONG ptr, JAVA_FLOAT lineWidth, JAVA_INT capStyle, JAVA_INT joinStyle, JAVA_FLOAT miterLimit)
+void com_codename1_impl_ios_IOSNative_nativePathStrokerReset___long_float_int_int_float_float_1ARRAY_int_float(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_LONG ptr, JAVA_FLOAT lineWidth, JAVA_INT capStyle, JAVA_INT joinStyle, JAVA_FLOAT miterLimit, JAVA_OBJECT dashPattern, JAVA_INT dashPatternCount, JAVA_FLOAT dashPhase)
 {
-    Stroker_reset((Stroker*)ptr, lineWidth, capStyle, joinStyle, miterLimit);
+    Stroker_reset((Stroker*)ptr, lineWidth, capStyle, joinStyle, miterLimit);//, dashPattern, dashPatternCount, dashPhase); //TODO: modify Stroker to pass dash parameters
 }
 //native long nativePathStrokerGetConsumer(long ptr);
 
@@ -6987,9 +6992,9 @@ JAVA_BOOLEAN com_codename1_impl_ios_IOSNative_nativeIsAlphaMaskSupportedGlobal__
 
 // Start Shapes (ES2)
 
-JAVA_LONG com_codename1_impl_ios_IOSNative_nativePathStrokerCreate___long_float_int_int_float_R_long(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_LONG consumerOutPtr, JAVA_FLOAT lineWidth, JAVA_INT capStyle, JAVA_INT joinStyle, JAVA_FLOAT miterLimit)
+JAVA_LONG com_codename1_impl_ios_IOSNative_nativePathStrokerCreate___long_float_int_int_float_float_1ARRAY_int_float_R_long(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_LONG consumerOutPtr, JAVA_FLOAT lineWidth, JAVA_INT capStyle, JAVA_INT joinStyle, JAVA_FLOAT miterLimit, JAVA_OBJECT dashPattern, JAVA_INT dashPatternCount, JAVA_FLOAT dashPhase)
 {
-    return com_codename1_impl_ios_IOSNative_nativePathStrokerCreate___long_float_int_int_float( instanceObject, consumerOutPtr,  lineWidth,  capStyle,  joinStyle,  miterLimit);
+    return com_codename1_impl_ios_IOSNative_nativePathStrokerCreate___long_float_int_int_float_float_1ARRAY_int_float( instanceObject, consumerOutPtr,  lineWidth,  capStyle,  joinStyle,  miterLimit, dashPattern, dashPatternCount, dashPhase);
 }
 
 JAVA_LONG com_codename1_impl_ios_IOSNative_nativePathStrokerGetConsumer___long_R_long(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_LONG ptr)

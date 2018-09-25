@@ -1826,6 +1826,8 @@ public class IOSImplementation extends CodenameOneImplementation {
             int capStyle = stroke.getCapStyle();
             int miterStyle = stroke.getJoinStyle();
             float miterLimit = stroke.getMiterLimit();
+            float[] dashPattern = stroke.hasDashPattern()?stroke.getDashPattern():null;
+            float dashPhase = stroke.getDashPhase();
             
             PathIterator path = shape.getPathIterator();
             Rectangle rb = shape.getBounds();
@@ -1833,7 +1835,7 @@ public class IOSImplementation extends CodenameOneImplementation {
             int padding = (int)Math.ceil(lineWidth);
             int padding2 = padding * 2;
             NativePathRenderer renderer = new NativePathRenderer(rb.getX()-padding, rb.getY()-padding, rb.getWidth()+padding2, rb.getHeight()+padding2, path.getWindingRule());
-            NativePathStroker stroker = new NativePathStroker(renderer, lineWidth, capStyle, miterStyle, miterLimit);
+            NativePathStroker stroker = new NativePathStroker(renderer, lineWidth, capStyle, miterStyle, miterLimit, dashPattern, dashPhase);
             NativePathConsumer c = stroker.consumer;
             fillPathConsumer(path, c);
 
@@ -1886,7 +1888,7 @@ public class IOSImplementation extends CodenameOneImplementation {
                 ng.fillConvexPolygon(points, color, alpha);
 
             } else {
-                ng.drawConvexPolygon(points, color, alpha, stroke.getLineWidth(), stroke.getJoinStyle(), stroke.getCapStyle(), stroke.getMiterLimit());
+                ng.drawConvexPolygon(points, color, alpha, stroke.getLineWidth(), stroke.getJoinStyle(), stroke.getCapStyle(), stroke.getMiterLimit(), stroke.hasDashPattern()?stroke.getDashPattern():null, stroke.getDashPhase());
             }
         }
         
@@ -3642,9 +3644,11 @@ public class IOSImplementation extends CodenameOneImplementation {
          * @param capStyle
          * @param joinStyle
          * @param miterLimit 
+         * @param dashPattern 
+         * @param dashPhase 
          */
-        NativePathStroker(NativePathRenderer renderer, float lineWidth, int capStyle, int joinStyle, float miterLimit){
-            ptr = nativeInstance.nativePathStrokerCreate(renderer.consumer.ptr, lineWidth, capStyle, joinStyle, miterLimit);
+        NativePathStroker(NativePathRenderer renderer, float lineWidth, int capStyle, int joinStyle, float miterLimit, float[] dashPattern, float dashPhase){
+            ptr = nativeInstance.nativePathStrokerCreate(renderer.consumer.ptr, lineWidth, capStyle, joinStyle, miterLimit, dashPattern, (dashPattern!=null)?dashPattern.length:0, dashPhase);
             this.renderer = renderer;
             this.consumer = new NativePathConsumer(nativeInstance.nativePathStrokerGetConsumer(ptr));
         }
@@ -3655,9 +3659,11 @@ public class IOSImplementation extends CodenameOneImplementation {
          * @param capStyle
          * @param joinStyle
          * @param miterLimit 
+         * @param dashPattern 
+         * @param dashPhase 
          */
-        void reset(float lineWidth, int capStyle, int joinStyle, float miterLimit){
-            nativeInstance.nativePathStrokerReset(ptr, lineWidth, capStyle, joinStyle, miterLimit);
+        void reset(float lineWidth, int capStyle, int joinStyle, float miterLimit, float[] dashPattern, float dashPhase){
+            nativeInstance.nativePathStrokerReset(ptr, lineWidth, capStyle, joinStyle, miterLimit, dashPattern, (dashPattern!=null)?dashPattern.length:0, dashPhase);
         }
         
         /**
@@ -4482,7 +4488,7 @@ public class IOSImplementation extends CodenameOneImplementation {
                 p.getTypes(commandsArr);
                 p.getPoints(pointsArr);
                 
-                nativeInstance.nativeDrawShapeMutable(color, alpha, commandsLen, commandsArr, pointsLen, pointsArr, stroke.getLineWidth(), stroke.getCapStyle(), stroke.getJoinStyle(), stroke.getMiterLimit());
+                nativeInstance.nativeDrawShapeMutable(color, alpha, commandsLen, commandsArr, pointsLen, pointsArr, stroke.getLineWidth(), stroke.getCapStyle(), stroke.getJoinStyle(), stroke.getMiterLimit(), stroke.getDashPattern(), (stroke.getDashPattern()!=null)?stroke.getDashPattern().length:0, stroke.getDashPhase());
             } else {
                 Log.p("Drawing shapes that are not GeneralPath objects is not yet supported on mutable images.");
             }
@@ -4592,7 +4598,7 @@ public class IOSImplementation extends CodenameOneImplementation {
             
         }
 
-        void drawConvexPolygon(float[] points, int color, int alpha, float lineWidth, int joinStyle, int capStyle, float miterLimit) {
+        void drawConvexPolygon(float[] points, int color, int alpha, float lineWidth, int joinStyle, int capStyle, float miterLimit, float[] dashPattern, float dashPhase) {
             
         }
 
@@ -4879,8 +4885,8 @@ public class IOSImplementation extends CodenameOneImplementation {
             nativeInstance.fillConvexPolygonGlobal(points, color, alpha);
         }
 
-        void drawConvexPolygon(float[] points, int color, int alpha, float lineWidth, int joinStyle, int capStyle, float miterLimit) {
-            nativeInstance.drawConvexPolygonGlobal(points, color, alpha, lineWidth, joinStyle, capStyle, miterLimit);
+        void drawConvexPolygon(float[] points, int color, int alpha, float lineWidth, int joinStyle, int capStyle, float miterLimit, float[] dashPattern, float dashPhase) {
+            nativeInstance.drawConvexPolygonGlobal(points, color, alpha, lineWidth, joinStyle, capStyle, miterLimit, dashPattern, (dashPattern!=null)?dashPattern.length:0, dashPhase);
         }
         
         private GeneralPath tmpDrawShape;

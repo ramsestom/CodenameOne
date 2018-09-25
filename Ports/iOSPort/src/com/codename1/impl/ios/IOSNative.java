@@ -461,9 +461,9 @@ public final class IOSNative {
 
     
     // Paths
-    native long nativePathStrokerCreate(long consumerOutPtr, float lineWidth, int capStyle, int joinStyle, float miterLimit);
+    native long nativePathStrokerCreate(long consumerOutPtr, float lineWidth, int capStyle, int joinStyle, float miterLimit, float[] dashPattern, int dashPatternCount, float dashPhase);
     native void nativePathStrokerCleanup(long ptr);
-    native void nativePathStrokerReset(long ptr, float lineWidth, int capStyle, int joinStyle, float miterLimit);
+    native void nativePathStrokerReset(long ptr, float lineWidth, int capStyle, int joinStyle, float miterLimit, float[] dashPattern, int dashPatternCount, float dashPhase);
     native long nativePathStrokerGetConsumer(long ptr);
     
     native long nativePathRendererCreate(int pix_boundsX, int pix_boundsY,
@@ -515,7 +515,7 @@ public final class IOSNative {
     
     native void nativeFillShapeMutable(int color, int alpha, int commandsLen, byte[] commandsArr, int pointsLen, float[] pointsArr); 
 
-    native void nativeDrawShapeMutable(int color, int alpha, int commandsLen, byte[] commandsArr, int pointsLen, float[] pointsArr, float lineWidth, int capStyle, int joinStyle, float miterLimit);
+    native void nativeDrawShapeMutable(int color, int alpha, int commandsLen, byte[] commandsArr, int pointsLen, float[] pointsArr, float lineWidth, int capStyle, int joinStyle, float miterLimit, float[] dashPattern, int dashPatternCount, float dashPhase);
     
     // End paths
 
@@ -528,7 +528,7 @@ public final class IOSNative {
 
     native void fillConvexPolygonGlobal(float[] points, int color, int alpha);
 
-    native void drawConvexPolygonGlobal(float[] points, int color, int alpha, float lineWidth, int joinStyle, int capStyle, float miterLimit);
+    native void drawConvexPolygonGlobal(float[] points, int color, int alpha, float lineWidth, int joinStyle, int capStyle, float miterLimit, float[] dashPattern, int dashPatternCount, float dashPhase);
 
     native void setNativeClippingPolygonGlobal(float[] points);
 

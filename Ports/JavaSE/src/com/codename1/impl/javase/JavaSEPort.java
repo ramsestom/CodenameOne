@@ -6397,7 +6397,7 @@ public class JavaSEPort extends CodenameOneImplementation {
         Shape s = cn1ShapeToAwtShape(shape);
         
         Stroke oldStroke = nativeGraphics.getStroke();
-        BasicStroke bs = new BasicStroke(stroke.getLineWidth(), stroke.getCapStyle() , stroke.getJoinStyle(), stroke.getMiterLimit());
+        BasicStroke bs = new BasicStroke(stroke.getLineWidth(), stroke.getCapStyle() , stroke.getJoinStyle(), stroke.getMiterLimit(), stroke.getDashPattern(), stroke.getDashPhase());
         nativeGraphics.setStroke(bs);
        
         nativeGraphics.draw(s);

@@ -87,6 +87,28 @@ public class Stroke {
     private int capStyle=0;
     private float lineWidth=1f;
     private float miterLimit=4f;
+    private float[] dashPattern=null; //TODO
+   private float dashPhase=0; //TODO
+    
+    
+    /**
+     * Creates a stroke with the specified characteristics.
+     * @param lineWidth The width of the stroke pixels.
+     * @param capStyle The cap style of the stroke.  Should be one of {@link #CAP_BUTT}, {@link #CAP_ROUND}, or {@link #CAP_SQUARE}.
+     * @param joinStyle The join style of the strokes.  Should be one of {@link #JOIN_MITER}, {@link #JOIN_ROUND}, or {@link #JOIN_BEVEL}.
+     * @param miterLimit The Miter limit controls the point at which a Miter join automatically is converted to a Bevel join. If the distance from the inner intersection point to the tip of the triangle measured in stroke widths is more than the Miter limit, the join will be drawn in the Bevel style.
+     * @param dashPattern Must contain an even number of entries (>=2), with the even indices specifying the length of the "on" intervals (=painted segments), and the odd indices specifying the length of the "off" intervals (=unpainted segments=dashes).
+     * @param dashPhase The offset at which to start drawing the dash pattern. 
+    */
+    public Stroke(float lineWidth, int capStyle, int joinStyle, float miterLimit, float[] dashPattern, float dashPhase){
+        this.lineWidth = lineWidth;
+        this.capStyle = capStyle;
+        this.joinStyle = joinStyle;
+        this.miterLimit = miterLimit;
+        this.dashPattern = dashPattern;
+        this.dashPhase = dashPhase;
+    }
+    
     
     /**
      * Creates a stroke with the specified characteristics.
@@ -125,6 +147,8 @@ public class Stroke {
         this.capStyle = stroke.capStyle;
         this.joinStyle = stroke.joinStyle;
         this.miterLimit = stroke.miterLimit;
+        this.dashPattern = stroke.dashPattern;
+        this.dashPhase = stroke.dashPhase;
     }
 
     /**
@@ -210,12 +234,41 @@ public class Stroke {
     public void setMiterLimit(float miterLimit) {
         this.miterLimit = miterLimit;
     }
+    
+    
+    
+    public float[] getDashPattern() {
+		return dashPattern;
+	}
+
+
+	public void setDashPattern(float[] dashPattern) {
+		this.dashPattern = dashPattern;
+	}
+	
+	
+	public boolean hasDashPattern() {
+		return (dashPattern != null && dashPattern.length>=2);
+	}
+
+
+	public float getDashPhase() {
+		return dashPhase;
+	}
+
+
+	public void setDashPhase(float dashPhase) {
+		this.dashPhase = Math.max(0, dashPhase); //ensure phase is >= 0
+	}
+
+    
+    
 
     @Override
     public boolean equals(Object obj) {
         if ( obj instanceof Stroke ){
             Stroke s = (Stroke)obj;
-            return (s.miterLimit==miterLimit && s.capStyle==capStyle && s.joinStyle==joinStyle && s.lineWidth==lineWidth);
+            return (s.miterLimit==miterLimit && s.capStyle==capStyle && s.joinStyle==joinStyle && s.lineWidth==lineWidth && s.dashPattern==dashPattern && s.dashPhase==dashPhase);
         }
         return false;
     }
@@ -227,6 +280,12 @@ public class Stroke {
         hash = 59 * hash + this.capStyle;
         hash = 59 * hash + Float.floatToIntBits(this.lineWidth);
         hash = 59 * hash + Float.floatToIntBits(this.miterLimit);
+        if (this.dashPattern!=null) {
+        	for (int i=0; i<this.dashPattern.length; i++) {
+        		hash = 59 * hash + Float.floatToIntBits(this.dashPattern[i]);
+        	}
+        }
+        hash = 59 * hash + Float.floatToIntBits(this.dashPhase);
         return hash;
     }
     

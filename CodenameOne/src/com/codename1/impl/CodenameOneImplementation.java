@@ -601,7 +601,6 @@ public abstract class CodenameOneImplementation {
                         wrapper.setClip(dirty.getX(), dirty.getY(), d.getWidth(), d.getHeight());
                         cmp.setDirtyRegion(null);
                     }
-
                     cmp.paintComponent(wrapper);
                     getPaintableBounds(cmp, paintDirtyTmpRect);
                     int cmpAbsX = paintDirtyTmpRect.getX();

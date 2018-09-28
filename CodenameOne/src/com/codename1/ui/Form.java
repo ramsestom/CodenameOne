@@ -1370,6 +1370,9 @@ public class Form extends Container {
         if (overlay != null && overlay.getResponderAt(x, y) != null) {
             return overlay;
         }
+        if (menuBar != null && menuBar.contains(x, y)) {
+            return menuBar;
+        }
         return getActualPane();
     }
     
@@ -3839,7 +3842,6 @@ public class Form extends Container {
      */
     void fixNegativeScrolls() {
         java.util.Set<Component> negativeScrolls = getContentPane().findNegativeScrolls(new java.util.HashSet<Component>());
-        System.out.println("NegativeScrolls: "+negativeScrolls);
         for (Component cmp : negativeScrolls) {
             int x = cmp.getAbsoluteX()+cmp.getWidth()/2;
             int y = cmp.getAbsoluteY()+cmp.getHeight()/2;

@@ -31,7 +31,7 @@ import java.util.Map;
  * A spinner node for rendering spinnable lists. 
  * @author shannah
  */
-class SpinnerNode extends Node {
+public class SpinnerNode extends Node {
     private Label rowTemplate = new Label("", "Spinner3DRow");
     private Label overlayTemplate = new Label("", "Spinner3DOverlay");
     private Style rowStyle, selectedRowStyle, overlayStyle;

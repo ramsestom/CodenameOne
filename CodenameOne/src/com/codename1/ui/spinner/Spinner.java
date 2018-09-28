@@ -46,7 +46,7 @@ import java.util.Date;
  * @author Shai Almog
  * @deprecated use Picker instead
  */
-class Spinner extends List {
+public class Spinner extends List {
     /**
      * Value for create date renderer represnting Day-Month-4 Digit Year
      */

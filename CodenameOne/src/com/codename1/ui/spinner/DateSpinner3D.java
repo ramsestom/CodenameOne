@@ -43,7 +43,7 @@ import java.util.Date;
  * 
  * @author Steve Hannah
  */
-class DateSpinner3D extends Container implements InternalPickerWidget {
+public class DateSpinner3D extends Container implements InternalPickerWidget {
     private Spinner3D month;
     private Spinner3D day;
     private Spinner3D year;

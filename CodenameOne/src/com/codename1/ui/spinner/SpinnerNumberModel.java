@@ -35,7 +35,7 @@ import com.codename1.ui.util.EventDispatcher;
  * @author Shai Almog
  * @deprecated use Picker instead
  */
-class SpinnerNumberModel implements ListModel {
+public class SpinnerNumberModel implements ListModel {
     private EventDispatcher dataListener = new EventDispatcher();
     private EventDispatcher selectionListener = new EventDispatcher();
     private double min;

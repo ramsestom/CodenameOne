@@ -30,7 +30,7 @@ import java.util.Date;
  * A Calendar Picker widget.  Used by the picker.
  * @author Steve Hannah
  */
-class CalendarPicker extends Container implements InternalPickerWidget {
+public class CalendarPicker extends Container implements InternalPickerWidget {
     private com.codename1.ui.Calendar calendar;
     
     public CalendarPicker() {

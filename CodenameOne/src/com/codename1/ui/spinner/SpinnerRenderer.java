@@ -39,7 +39,7 @@ import java.util.Map;
  *
  * @author Shai Almog
  */
-class SpinnerRenderer<T> extends DefaultListCellRenderer<T>{
+public class SpinnerRenderer<T> extends DefaultListCellRenderer<T>{
     private Map<Character, Image>[] imageCache;
     private static final int PERSPECTIVES = 9;
     private static final int FRONT_ANGLE = 4;

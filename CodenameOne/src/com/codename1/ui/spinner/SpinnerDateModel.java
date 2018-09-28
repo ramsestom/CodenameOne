@@ -37,7 +37,7 @@ import java.util.TimeZone;
  * @author Shai Almog
  * @deprecated use Picker instead
  */
-class SpinnerDateModel implements ListModel {
+public class SpinnerDateModel implements ListModel {
     private EventDispatcher dataListener = new EventDispatcher();
     private EventDispatcher selectionListener = new EventDispatcher();
     private long min;

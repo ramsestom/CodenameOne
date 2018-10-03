@@ -1209,7 +1209,7 @@ public final class Graphics {
      * @param pivotY the pivot point In absolute coordinates.
      */
     public void rotate(float angle, int pivotX, int pivotY) {
-        impl.rotate(nativeGraphics, angle, pivotX, pivotY);
+        impl.rotate(nativeGraphics, angle, pivotX+xTranslate, pivotY+yTranslate);
     }
 
     /**

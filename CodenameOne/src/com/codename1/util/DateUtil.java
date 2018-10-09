@@ -96,5 +96,52 @@ public class DateUtil {
      {
         return (d1.getTime() < d2.getTime()) ? -1 : (d1.getTime() == d2.getTime()) ? 0 : 1;
      }
-    
+ 
+     
+     
+     /**
+      * @return the date that is the most ancient (= that comes first in time) between d1 and d2
+      */
+     public static Date first(Date d1, Date d2) {
+    	 if (compare(d1, d2)<0) {
+    		 return d1;
+    	 } else {
+    		 return d2;
+    	 }
+     }
+     
+     
+     /**
+      * @return the date that is the most recent (= that comes last in time) between d1 and d2
+      */
+     public static Date last(Date d1, Date d2) {
+    	 if (compare(d1, d2)>0) {
+    		 return d1;
+    	 } else {
+    		 return d2;
+    	 }
+     }
+     
+     
+     public static Date addMilliseconds(Date date, long ms) {
+    	 if (date == null) {date = new Date();}
+    	 return new Date(date.getTime()+ms);
+     }
+     
+     public static Date addSeconds(Date date, long s) {
+    	 return addMilliseconds(date, s*1000);
+     }
+     
+     public static Date addMinutes(Date date, long m) {
+    	 return addMilliseconds(date, m*60*1000);
+     }
+     
+     public static Date addHours(Date date, long h) {
+    	 return addMilliseconds(date, h*60*60*1000);
+     }
+     
+     public static Date addDays(Date date, long d) {
+    	 return addMilliseconds(date, d*24*60*60*1000);
+     }
+     
 }

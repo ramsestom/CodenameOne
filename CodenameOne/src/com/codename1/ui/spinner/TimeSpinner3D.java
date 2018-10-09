@@ -89,7 +89,8 @@ public class TimeSpinner3D extends Container implements InternalPickerWidget {
             });
             Style hourStyle = Style.createProxyStyle(hour.getRowStyle(), hour.getSelectedRowStyle());
             hourStyle.setAlignment(Component.RIGHT);
-            hourStyle.setPaddingRight(3f);
+            //hourStyle.setPaddingRight(3f);
+                       
             //hour.refreshStyles();
             minute = Spinner3D.create(0, 60, currentMinute, minuteStep);
             minute.setRowFormatter(new SpinnerNode.RowFormatter() {
@@ -118,7 +119,7 @@ public class TimeSpinner3D extends Container implements InternalPickerWidget {
             
             Style minuteStyle = Style.createProxyStyle(minute.getRowStyle(), minute.getSelectedRowStyle());
             minuteStyle.setAlignment(Component.RIGHT);
-            minuteStyle.setPaddingRight(3f);
+            //minuteStyle.setPaddingRight(3f);
             
             //minute.refreshStyles();
             if(currentMeridiem) {
@@ -140,6 +141,10 @@ public class TimeSpinner3D extends Container implements InternalPickerWidget {
             });
             //getAllStyles().setBgColor(hour.getUnselectedStyle().getBgColor());
             //getAllStyles().setBgTransparency(255);
+            
+            //Style ampmStyle = Style.createProxyStyle(amPM.getRowStyle(), amPM.getSelectedRowStyle());
+            //ampmStyle.setAlignment(Component.RIGHT);
+            
             addComponents();
         }
     }
@@ -463,5 +468,18 @@ public class TimeSpinner3D extends Container implements InternalPickerWidget {
         super.paint(g); //To change body of generated methods, choose Tools | Templates.
     }
     
+    
+    
+    public Style getRowStyleProxy() {
+        return Style.createProxyStyle(hour.getRowStyle(), minute.getRowStyle(), amPM.getRowStyle());
+    }
+    
+    public Style getSelectedRowStyleProxy() {
+    	return Style.createProxyStyle(hour.getSelectedRowStyle(), minute.getSelectedRowStyle(), amPM.getSelectedRowStyle());
+    }
+    
+    public Style getSelectedOverlayStyleProxy() {
+    	return Style.createProxyStyle(hour.getSelectedOverlayStyle(), minute.getSelectedOverlayStyle(), amPM.getSelectedOverlayStyle());
+    }
     
 }

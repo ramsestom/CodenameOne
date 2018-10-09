@@ -319,5 +319,16 @@ public class DateTimeSpinner3D extends Container implements InternalPickerWidget
     
     
     
+    public Style getRowStyleProxy() {
+        return Style.createProxyStyle(date.getRowStyle(), time.getRowStyleProxy());
+    }
+    
+    public Style getSelectedRowStyleProxy() {
+    	return Style.createProxyStyle(date.getSelectedRowStyle(), time.getSelectedRowStyleProxy());
+    }
+    
+    public Style getSelectedOverlayStyleProxy() {
+    	return Style.createProxyStyle(date.getSelectedOverlayStyle(), time.getSelectedOverlayStyleProxy());
+    }
     
 }

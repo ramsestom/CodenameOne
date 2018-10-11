@@ -1519,7 +1519,9 @@ public final class Display extends CN1Constants {
     }
     
     /**
-     * Allows us to stop editString on the given text component
+     * Allows us to stop editString on the given text component or Form.
+     * If {@literal cmp} is a {@link Form}, it will stop editing in any active
+     * component on the form, and close the keyboard if it is opened.
      * @param cmp the text field/text area component
      * @param onFinish invoked when editing stopped
      */
@@ -1530,6 +1532,10 @@ public final class Display extends CN1Constants {
     }
 
     boolean isTextEditing(Component c) {
+        if (c instanceof Form && c == getCurrent()) {
+            return impl.isEditingText();
+        }
+            
         return impl.isEditingText(c);
     }
     

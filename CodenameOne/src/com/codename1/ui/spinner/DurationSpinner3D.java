@@ -45,6 +45,7 @@ public class DurationSpinner3D extends Container implements InternalPickerWidget
     public static final int FIELD_MILLISECOND=32;
     
     private Spinner3D days, hours, minutes, seconds, milliseconds;
+    private Label days_label, hours_label, minutes_label, seconds_label, milliseconds_label;
     private final boolean includeDays, includeHours, includeMinutes, includeSeconds, includeMilliseconds;
     
     public DurationSpinner3D(int fields) {
@@ -71,40 +72,45 @@ public class DurationSpinner3D extends Container implements InternalPickerWidget
             days.setPreferredW(new Label("000", "Spinner3DRow").getPreferredW());
             s = Style.createProxyStyle(days.getRowStyle(), days.getSelectedRowStyle());
             s.setAlignment(Component.RIGHT);
+            days_label = new Label(uim.localize("day", "day"));
             box.add(days);
-            box.add(new Label(uim.localize("day", "day")));
+            box.add(days_label);
         }
         if (includeHours) {
             hours = Spinner3D.create(0, includeDays ? 24 : 1000, 0, 1);
             hours.setPreferredW(new Label("000", "Spinner3DRow").getPreferredW());
             s = Style.createProxyStyle(hours.getRowStyle(), hours.getSelectedRowStyle());
             s.setAlignment(Component.RIGHT);
+            hours_label = new Label(uim.localize("hour", "hour"));
             box.add(hours);
-            box.add(new Label(uim.localize("hour", "hour")));
+            box.add(hours_label);
         }
         if (includeMinutes) {
-            minutes = Spinner3D.create(0, includeHours ? 59 : 1000, 0, 1);
+            minutes = Spinner3D.create(0, includeHours ? 60 : 1000, 0, 1);
             minutes.setPreferredW(new Label("000", "Spinner3DRow").getPreferredW());
             s = Style.createProxyStyle(minutes.getRowStyle(), minutes.getSelectedRowStyle());
             s.setAlignment(Component.RIGHT);
+            minutes_label = new Label(uim.localize("min", "min"));
             box.add(minutes);
-            box.add(new Label(uim.localize("min", "min")));
+            box.add(minutes_label);
         }
         if (includeSeconds) {
-            seconds = Spinner3D.create(0, includeMinutes ? 59 : 1000, 0, 1);
+            seconds = Spinner3D.create(0, includeMinutes ? 60 : 1000, 0, 1);
             seconds.setPreferredW(new Label("0000", "Spinner3DRow").getPreferredW());
             s = Style.createProxyStyle(seconds.getRowStyle(), seconds.getSelectedRowStyle());
             s.setAlignment(Component.RIGHT);
+            seconds_label = new Label(uim.localize("sec", "sec"));
             box.add(seconds);
-            box.add(new Label(uim.localize("sec", "sec")));
+            box.add(seconds_label);
         }
         if (includeMilliseconds) {
             milliseconds = Spinner3D.create(0, 1000, 0, 1);
             milliseconds.setPreferredW(new Label("0000", "Spinner3DRow").getPreferredW());
             s = Style.createProxyStyle(milliseconds.getRowStyle(), milliseconds.getSelectedRowStyle());
             s.setAlignment(Component.RIGHT);
+            milliseconds_label = new Label("ms", "ms");
             box.add(milliseconds);
-            box.add(new Label("ms", "ms"));
+            box.add(milliseconds_label);
         }
         
         wrapper.add(box);
@@ -182,4 +188,104 @@ public class DurationSpinner3D extends Container implements InternalPickerWidget
         }
         return l;
     }
+    
+    
+    public Style getRowStyleProxy() {
+    	int nbstyles = 0;
+    	if(includeDays) {nbstyles++;}
+    	if(includeHours) {nbstyles++;}
+    	if(includeMinutes) {nbstyles++;}
+    	if(includeSeconds) {nbstyles++;}
+    	if(includeMilliseconds) {nbstyles++;}
+    	Style[] styles = new Style[nbstyles]; 
+    	int sind = 0;
+    	if(includeDays) {styles[sind++]=days.getRowStyle();}
+    	if(includeHours) {styles[sind++]=hours.getRowStyle();}
+    	if(includeMinutes) {styles[sind++]=minutes.getRowStyle();}
+    	if(includeSeconds) {styles[sind++]=seconds.getRowStyle();}
+    	if(includeMilliseconds) {styles[sind++]=milliseconds.getRowStyle();}
+    	return Style.createProxyStyle(styles);
+    }
+    
+    public Style getSelectedRowStyleProxy() {
+    	int nbstyles = 0;
+    	if(includeDays) {nbstyles++;}
+    	if(includeHours) {nbstyles++;}
+    	if(includeMinutes) {nbstyles++;}
+    	if(includeSeconds) {nbstyles++;}
+    	if(includeMilliseconds) {nbstyles++;}
+    	Style[] styles = new Style[nbstyles]; 
+    	int sind = 0;
+    	if(includeDays) {styles[sind++]=days.getSelectedRowStyle();}
+    	if(includeHours) {styles[sind++]=hours.getSelectedRowStyle();}
+    	if(includeMinutes) {styles[sind++]=minutes.getSelectedRowStyle();}
+    	if(includeSeconds) {styles[sind++]=seconds.getSelectedRowStyle();}
+    	if(includeMilliseconds) {styles[sind++]=milliseconds.getSelectedRowStyle();}
+    	return Style.createProxyStyle(styles);
+    }
+    
+    public Style getSelectedOverlayStyleProxy() {
+    	int nbstyles = 0;
+    	if(includeDays) {nbstyles++;}
+    	if(includeHours) {nbstyles++;}
+    	if(includeMinutes) {nbstyles++;}
+    	if(includeSeconds) {nbstyles++;}
+    	if(includeMilliseconds) {nbstyles++;}
+    	Style[] styles = new Style[nbstyles]; 
+    	int sind = 0;
+    	if(includeDays) {styles[sind++]=days.getSelectedOverlayStyle();}
+    	if(includeHours) {styles[sind++]=hours.getSelectedOverlayStyle();}
+    	if(includeMinutes) {styles[sind++]=minutes.getSelectedOverlayStyle();}
+    	if(includeSeconds) {styles[sind++]=seconds.getSelectedOverlayStyle();}
+    	if(includeMilliseconds) {styles[sind++]=milliseconds.getSelectedOverlayStyle();}
+    	return Style.createProxyStyle(styles);
+    }
+    
+    public Style getLabelsStyleProxy() {
+    	int nbstyles = 0;
+    	if(includeDays) {nbstyles++;}
+    	if(includeHours) {nbstyles++;}
+    	if(includeMinutes) {nbstyles++;}
+    	if(includeSeconds) {nbstyles++;}
+    	if(includeMilliseconds) {nbstyles++;}
+    	Style[] styles = new Style[nbstyles]; 
+    	int sind = 0;
+    	if(includeDays) {styles[sind++]=days_label.getAllStyles();}
+    	if(includeHours) {styles[sind++]=hours_label.getAllStyles();}
+    	if(includeMinutes) {styles[sind++]=minutes_label.getAllStyles();}
+    	if(includeSeconds) {styles[sind++]=seconds_label.getAllStyles();}
+    	if(includeMilliseconds) {styles[sind++]=milliseconds_label.getAllStyles();}
+    	return Style.createProxyStyle(styles);
+    }
+    
+    public void setDaysLabelText(String text) {
+    	if (days_label!=null) {
+    		days_label.setText(text);
+    	}
+    }
+    
+    public void setHoursLabelText(String text) {
+    	if (hours_label!=null) {
+    		hours_label.setText(text);
+    	}
+    }
+    
+    public void setMinutesLabelText(String text) {
+    	if (minutes_label!=null) {
+    		minutes_label.setText(text);
+    	}
+    }
+    
+    public void setSecondsLabelText(String text) {
+    	if (seconds_label!=null) {
+    		seconds_label.setText(text);
+    	}
+    }
+    
+    public void setMillisecondsLabelText(String text) {
+    	if (milliseconds_label!=null) {
+    		milliseconds_label.setText(text);
+    	}
+    }
+    
 }

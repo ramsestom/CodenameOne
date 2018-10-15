@@ -4916,6 +4916,59 @@ public class Component implements Animation, StyleListener {
         return unSelectedStyle;
     }
 
+    /**
+     * Returns the current Component Style type, based on the current component state
+     * 
+     * @return the component Style object
+     */
+    public byte getStyleType() {
+    	if(hasLead && !blockLead) {
+            Component lead = getLeadComponent();
+            if(lead != null) {
+                if(!lead.isEnabled()) {
+                    return Style.TYPE_DISABLED;
+                }
+
+                if(lead.isPressedStyle()) {
+                    return Style.TYPE_PRESSED;
+                }
+
+                if (lead.hasFocus() && Display.getInstance().shouldRenderSelection(this)) {
+                    return Style.TYPE_SELECTED;
+                }
+            }
+            return Style.TYPE_UNSELECTED;
+        }
+
+        if(!isEnabled()) {
+            return Style.TYPE_DISABLED;
+        }
+
+        if(isPressedStyle()) {
+            return Style.TYPE_PRESSED;
+        }
+
+        if (hasFocus() && Display.getInstance().shouldRenderSelection(this)) {
+            return Style.TYPE_SELECTED;
+        }
+        return Style.TYPE_UNSELECTED;
+    }
+    
+    
+    public Style getStyle(byte type) {
+    	switch (type) {
+    		case Style.TYPE_SELECTED:
+    			return getSelectedStyle();	
+    		case Style.TYPE_DISABLED:
+    			return getDisabledStyle();
+    		case Style.TYPE_PRESSED:
+    			return getPressedStyle();
+    		default:
+    			return getUnselectedStyle();
+    	}
+    }
+    
+    
     boolean isPressedStyle() {
         return false;
     }

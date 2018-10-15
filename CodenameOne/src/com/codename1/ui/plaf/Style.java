@@ -60,6 +60,28 @@ import com.codename1.ui.util.EventDispatcher;
 public class Style {
     private Style[] proxyTo;
     
+    
+    /**
+    * Style associated to the unselected state of a component 
+    */
+    public static final byte TYPE_UNSELECTED = (byte) 1;
+
+    /**
+     * Style associated to the selected state of a component 
+     */
+    public static final byte TYPE_SELECTED = (byte) 2;
+    
+    /**
+     * Style associated to the disabled state of a component 
+     */
+    public static final byte TYPE_DISABLED = (byte) 3;
+    
+    /**
+     * Style associated to the pressed state of a component 
+     */
+    public static final byte TYPE_PRESSED = (byte) 4;
+    
+    
     /**
      * Background color attribute name for the theme hashtable 
      */

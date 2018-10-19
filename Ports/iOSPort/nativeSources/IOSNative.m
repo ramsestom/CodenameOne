@@ -1938,7 +1938,7 @@ void com_codename1_impl_ios_IOSNative_peerSetVisible___long_boolean(CN1_THREAD_S
             }
         } else {
             if([v superview] == nil) {
-                [[CodenameOne_GLViewController instance].view addPeerComponent:v];
+                [[[CodenameOne_GLViewController instance] eaglView] addPeerComponent:v];
             }
         }
         POOL_END();
@@ -1977,7 +1977,7 @@ void com_codename1_impl_ios_IOSNative_peerInitialized___long_int_int_int_int(CN1
         POOL_BEGIN();
         UIView* v = (BRIDGE_CAST UIView*)((void *)peer);
         if([v superview] == nil) {
-            [[CodenameOne_GLViewController instance].view addPeerComponent:v];
+            [[[CodenameOne_GLViewController instance] eaglView] addPeerComponent:v];
         }
         if(w > 0 && h > 0) {
             float scale = scaleValue;

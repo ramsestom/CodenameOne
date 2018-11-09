@@ -7445,7 +7445,7 @@ public class AndroidImplementation extends CodenameOneImplementation implements 
         if (super.isGalleryTypeSupported(type)) {
             return true;
         }
-        if (type == -9999) {
+        if (type == -9999 || type == -9998) {
             return true;
         }
         if (android.os.Build.VERSION.SDK_INT >= 16) {
@@ -7488,6 +7488,10 @@ public class AndroidImplementation extends CodenameOneImplementation implements 
             case Display.GALLERY_IMAGE_MULTI:
                 multi = true;
                 type = Display.GALLERY_IMAGE;
+                break;
+            case -9998:
+                multi = true;
+                type = -9999;
                 break;
             default:
                 multi = false;

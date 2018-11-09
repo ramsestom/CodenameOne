@@ -102,7 +102,7 @@ public abstract class Calendar{
      * day number within the current year. The first day of the year has value
      * 1.
      */
-    static final int DAY_OF_YEAR = 6;
+    public static final int DAY_OF_YEAR = 6;
 
     /**
      * Field number for get and set indicating the day of the week.

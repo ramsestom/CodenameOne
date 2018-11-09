@@ -7085,6 +7085,7 @@ public class JavaSEPort extends CodenameOneImplementation {
      */
     public void execute(String url) {
         try {
+            url = url.trim();
             if(url.startsWith("file:")) {
                 if(!checkForPermission("android.permission.WRITE_EXTERNAL_STORAGE", "This is required to open the file")){
                     return;
@@ -7092,7 +7093,25 @@ public class JavaSEPort extends CodenameOneImplementation {
                 
                 url = new File(unfile(url)).toURI().toURL().toExternalForm();
             }
-            Desktop.getDesktop().browse(new URI(url));
+            final String fUrl = url;
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    try {
+                        
+                        Desktop.getDesktop().browse(new URI(fUrl));
+                    } catch (Exception ex) {
+                        try {
+                            if (fUrl.startsWith("file:") && new File(new URI(fUrl)).exists()) {
+                                Desktop.getDesktop().open(new File(new URI(fUrl)));
+                                
+                            }
+                        } catch (Exception ex2) {
+                            ex2.printStackTrace();
+                        }
+                    }
+                }
+            });
+            
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -8755,6 +8774,7 @@ public class JavaSEPort extends CodenameOneImplementation {
         }
         switch (type) {
             case -9999:
+            case -9998:
             case Display.GALLERY_IMAGE_MULTI:
             case Display.GALLERY_VIDEO_MULTI:
             case Display.GALLERY_ALL_MULTI:
@@ -8772,6 +8792,12 @@ public class JavaSEPort extends CodenameOneImplementation {
         if (!isGalleryTypeSupported(type)) {
             throw new IllegalArgumentException("Gallery type "+type+" not supported on this platform.");
         }
+        boolean multi=false;
+        if (type == -9998) {
+            multi=true;
+            type = -9999;
+        }
+        
         if (type == Display.GALLERY_IMAGE_MULTI) {
             checkGalleryMultiselect();
             checkPhotoLibraryUsageDescription();
@@ -8799,14 +8825,18 @@ public class JavaSEPort extends CodenameOneImplementation {
             checkPhotoLibraryUsageDescription();
             checkAppleMusicUsageDescription();
             String[] exts = Display.getInstance().getProperty("javase.openGallery.accept", "").split(",");
-            
-            capture(response, exts, getGlobsForExtensions(exts, ";"));
+            if (multi) {
+                captureMulti(response, exts, getGlobsForExtensions(exts, ";"));
+            } else {
+                capture(response, exts, getGlobsForExtensions(exts, ";"));
+            }
         }else{
             checkPhotoLibraryUsageDescription();
             checkAppleMusicUsageDescription();
             String[] exts = new String[videoExtensions.length+imageExtensions.length];
             System.arraycopy(videoExtensions, 0, exts,0, videoExtensions.length);
             System.arraycopy(imageExtensions, 0, exts, videoExtensions.length, imageExtensions.length);
+            
             capture(response, exts, getGlobsForExtensions(exts, ";"));
         }
     }
@@ -10408,6 +10438,10 @@ public class JavaSEPort extends CodenameOneImplementation {
 
             @Override
             public void subscribe(final String sku) {
+                if (getReceiptStore() != null) {
+                    purchase(sku);
+                    return;
+                }
                 if (subscriptionSupported) {
                     SwingUtilities.invokeLater(new Runnable() {
 

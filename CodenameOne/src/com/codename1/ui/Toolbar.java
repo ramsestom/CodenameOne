@@ -154,6 +154,8 @@ public class Toolbar extends Container {
     private Vector<Command> overflowCommands;
 
     private Button menuButton;
+    private Command leftSideMenuCommand;
+    private Command rightSideMenuCommand;
 
     private ScrollListener scrollListener;
 
@@ -1257,7 +1259,7 @@ public class Toolbar extends Container {
                                 final int sensitiveSection = displayWidth / getUIManager().getThemeConstant("sideSwipeSensitiveInt", 10);
                                 if (evt.getX() > displayWidth - sensitiveSection) {
                                     parent.putClientProperty("cn1$rightSidemenuCharged", Boolean.TRUE);
-                                    evt.consume();
+                                    //evt.consume();
                                 } else {
                                     parent.putClientProperty("cn1$rightSidemenuCharged", Boolean.FALSE);
                                     permanentRightSideMenuContainer.pointerPressed(evt.getX(), evt.getY());
@@ -1299,7 +1301,8 @@ public class Toolbar extends Container {
             if (!isPointerDraggedListenerAdded) {
                 parent.addPointerDraggedListener(new ActionListener() {
                     public void actionPerformed(ActionEvent evt) {
-                        if (Display.getInstance().getImplementation().isScrollWheeling() || !enableSideMenuSwipe || getComponentForm().findCurrentlyEditingComponent() != null || getComponentForm().isEditing()) {
+                        Form f = getComponentForm();
+                        if (f == null || Display.getInstance().getImplementation().isScrollWheeling() || !enableSideMenuSwipe || f.findCurrentlyEditingComponent() != null || f.isEditing()) {
                             return;
                         }
                         if (sidemenuDialog != null) {
@@ -1428,7 +1431,7 @@ public class Toolbar extends Container {
                             findCommandComponent(cmd).setPressedIcon(p);
                         }
                     } else {
-                        addMaterialCommandToLeftBar("", FontImage.MATERIAL_MENU, size, new ActionListener() {
+                        leftSideMenuCommand = addMaterialCommandToLeftBar("", FontImage.MATERIAL_MENU, size, new ActionListener() {
                             public void actionPerformed(ActionEvent evt) {
                                 if (sidemenuDialog.isShowing()) {
                                     closeSideMenu();
@@ -1474,7 +1477,7 @@ public class Toolbar extends Container {
                             findCommandComponent(cmd).setPressedIcon(p);
                         }
                     } else {
-                        addMaterialCommandToRightBar("", FontImage.MATERIAL_MENU, size, new ActionListener() {
+                        rightSideMenuCommand = addMaterialCommandToRightBar("", FontImage.MATERIAL_MENU, size, new ActionListener() {
                             public void actionPerformed(ActionEvent evt) {
                                 if (rightSidemenuDialog.isShowing()) {
                                     closeRightSideMenu();
@@ -1487,6 +1490,33 @@ public class Toolbar extends Container {
                 }
             }
         }
+    }
+    
+    /**
+     * Allows runtime manipulation of the side menu button, notice this will 
+     * only work after the menu was created
+     * @return a button or null if the menu isn't there yet
+     */
+    public Button getLeftSideMenuButton() {
+        return findCommandComponent(leftSideMenuCommand);
+    }
+    
+    /**
+     * Allows runtime manipulation of the side menu button, notice this will 
+     * only work after the menu was created
+     * @return a button or null if the menu isn't there yet
+     */
+    public Button getRightSideMenuButton() {
+        return findCommandComponent(rightSideMenuCommand);
+    }
+    
+    /**
+     * Allows runtime manipulation of the overflow button, notice this will 
+     * only work after the menu was created
+     * @return a button or null if the menu isn't there yet
+     */
+    public Button getOverflowButton() {
+        return menuButton;
     }
     
     private void constructOnTopSideMenu() {
@@ -1682,7 +1712,7 @@ public class Toolbar extends Container {
             if (Display.getInstance().isTablet()) {
                 v = getUIManager().getThemeConstant("sideMenuSizeTabPortraitInt", -1);
                 if (v < 0) {
-                    v = dw * 2 / 3;
+                    v = dw * 1 / 3;
                 } else {
                     v = dw * (100 - v) / 100;
                 }
@@ -1698,7 +1728,7 @@ public class Toolbar extends Container {
             if (Display.getInstance().isTablet()) {
                 v = getUIManager().getThemeConstant("sideMenuSizeTabLandscapeInt", -1);
                 if (v < 0) {
-                    v = dw * 3 / 4;
+                    v = dw * 1 / 4;
                 } else {
                     v = dw * (100 - v) / 100;
                 }
@@ -2225,6 +2255,8 @@ public class Toolbar extends Container {
      */
     protected List createOverflowCommandList(Vector commands) {
         List l = new List(commands);
+        l.setRenderingPrototype(null);
+        l.setListSizeCalculationSampleCount(commands.size());
         l.setUIID("CommandList");
         Component c = (Component) l.getRenderer();
         c.setUIID("Command");
@@ -2249,7 +2281,11 @@ public class Toolbar extends Container {
             // check if its already added:
             if (((BorderLayout) getLayout()).getNorth() == null) {
                 Container bar = new Container();
-                bar.setUIID("StatusBar");
+                if(getUIManager().isThemeConstant("landscapeTitleUiidBool", false)) {
+                    bar.setUIID("StatusBar", "StatusBarLandscape");
+                } else {
+                    bar.setUIID("StatusBar");
+                }
                 addComponent(BorderLayout.NORTH, bar);
             }
         }

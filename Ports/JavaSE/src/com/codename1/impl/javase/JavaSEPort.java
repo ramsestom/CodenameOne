@@ -107,10 +107,12 @@ import com.codename1.payment.Purchase;
 import com.codename1.payment.Receipt;
 import com.codename1.ui.Accessor;
 import com.codename1.ui.BrowserComponent;
+import com.codename1.ui.CN;
 import com.codename1.ui.EncodedImage;
 import com.codename1.ui.Label;
 import com.codename1.ui.PeerComponent;
 import com.codename1.ui.TextArea;
+import com.codename1.ui.TextSelection;
 import com.codename1.ui.Transform;
 import com.codename1.ui.Graphics.BlendMode;
 import com.codename1.ui.animations.Motion;
@@ -119,6 +121,8 @@ import com.codename1.ui.util.UITimer;
 import com.codename1.util.Callback;
 import com.jhlabs.image.GaussianFilter;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseWheelEvent;
@@ -1023,6 +1027,24 @@ public class JavaSEPort extends CodenameOneImplementation {
         formChangeListener.addListener(al);
     }
 
+    @Override
+    public void copyToClipboard(Object obj) {
+        if (obj instanceof String) {
+            final String text = (String)obj;
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    Toolkit toolkit = Toolkit.getDefaultToolkit();
+                    Clipboard clipboard = toolkit.getSystemClipboard();
+                    StringSelection strSel = new StringSelection(text.trim());
+                    clipboard.setContents(strSel, null);
+                }
+            });
+        }
+        super.copyToClipboard(obj); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    
+    
     public void setCurrentForm(Form f) {        
         super.setCurrentForm(f);
         if (formChangeListener != null) {
@@ -1096,6 +1118,19 @@ public class JavaSEPort extends CodenameOneImplementation {
         softkeyCount = aSoftkeyCount;
     }
 
+    @Override
+    public boolean isRightMouseButtonDown() {
+        if (lastInputEvent != null) {
+            if (lastInputEvent instanceof MouseEvent) {
+                MouseEvent me = (MouseEvent) lastInputEvent;
+                return SwingUtilities.isRightMouseButton(me);
+            }
+        }
+        return false;
+    }
+
+    
+    
     @Override
     public boolean isShiftKeyDown() {
         if (lastInputEvent != null) {
@@ -1591,6 +1626,9 @@ public class JavaSEPort extends CodenameOneImplementation {
             return k;
         }
 
+        
+        
+        
         public void keyTyped(KeyEvent e) {
         }
         // We only know if meta/ctrl/alt etc is down when the key is pressed, but we 
@@ -1600,6 +1638,47 @@ public class JavaSEPort extends CodenameOneImplementation {
         public void keyPressed(KeyEvent e) {
             if (!isEnabled()) {
                 return;
+            }
+            if (e.isMetaDown() && e.getKeyChar() == 'c') {
+                Form f = CN.getCurrentForm();
+                if (f != null) {
+                    final TextSelection ts = f.getTextSelection();
+                    if (ts.isEnabled()) {
+                        CN.callSerially(new Runnable() {
+                            public void run() {
+                                final String text = ts.getSelectionAsText();
+                                if (text != null && !text.trim().isEmpty()) {
+                                    EventQueue.invokeLater(new Runnable() {
+                                        public void run() {
+                                            Toolkit toolkit = Toolkit.getDefaultToolkit();
+                                            Clipboard clipboard = toolkit.getSystemClipboard();
+                                            StringSelection strSel = new StringSelection(text.trim());
+                                            clipboard.setContents(strSel, null);
+                                        }
+                                    });
+                                    
+                                }
+                            }
+                        });
+                    }
+                }
+                
+            }
+            
+            if (e.isMetaDown() && e.getKeyChar() == 'a') {
+                System.out.println("Select all");
+                Form f = CN.getCurrentForm();
+                if (f != null) {
+                    final TextSelection ts = f.getTextSelection();
+                    if (ts.isEnabled()) {
+                        CN.callSerially(new Runnable() {
+                            public void run() {
+                                ts.selectAll();
+                            }
+                        });
+                    }
+                }
+                
             }
             lastInputEvent = e;
             // block key combos that might generate unreadable events
@@ -8784,6 +8863,10 @@ public class JavaSEPort extends CodenameOneImplementation {
      */
     public char getFileSystemSeparator() {
         return '/';
+    }
+    
+    public String getLineSeparator() {
+        return System.lineSeparator();
     }
 
     /**

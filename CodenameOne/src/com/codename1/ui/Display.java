@@ -809,6 +809,10 @@ public final class Display extends CN1Constants {
         }
     }
 
+    public String getLineSeparator() {
+        return impl.getLineSeparator();
+    }
+    
     /**
      * Allows executing a background task in a separate low priority thread. Tasks are serialized
      * so they don't overload the CPU.
@@ -1729,6 +1733,15 @@ public final class Display extends CN1Constants {
      */
     public boolean isAltGraphKeyDown() {
         return impl.isAltGraphKeyDown();
+    }
+    
+    /**
+     * Checks if the last mouse press was a right click.
+     * @return True if the last mouse press was a right click.
+     * @since 7.0
+     */
+    public boolean isRightMouseButtonDown() {
+        return impl.isRightMouseButtonDown();
     }
     
     /**

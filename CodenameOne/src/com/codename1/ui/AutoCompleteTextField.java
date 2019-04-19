@@ -519,7 +519,7 @@ public class AutoCompleteTextField extends TextField {
             }
             
             if (contains(evt.getX(), evt.getY())) {
-                //if the suggestions are empty don't show the no need to show the popup
+                //if the suggestions are empty no need to show the popup
                 if( popup.getComponentCount()==0 || ((List)popup.getComponentAt(0)).getModel().getSize() == 0){
                     return;
                 }

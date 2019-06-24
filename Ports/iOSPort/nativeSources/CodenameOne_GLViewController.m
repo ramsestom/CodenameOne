@@ -293,7 +293,7 @@ void cn1_setStyleDoneButton(CN1_THREAD_STATE_MULTI_ARG UIBarButtonItem* btn) {
 void Java_com_codename1_impl_ios_IOSImplementation_editStringAtImpl
 (CN1_THREAD_STATE_MULTI_ARG int x, int y, int w, int h, void* font, int isSingleLine, int rows, int maxSize,
  int constraint, const char* str, int len, BOOL forceSlideUp,
- int color, JAVA_LONG imagePeer, int padTop, int padBottom, int padLeft, int padRight, NSString* hintString, BOOL showToolbar, BOOL blockCopyPaste, int alignment, int verticalAlignment) {
+ int color, JAVA_LONG imagePeer, int padTop, int padBottom, int padLeft, int padRight, NSString* hintString, int hintColor, BOOL showToolbar, BOOL blockCopyPaste, int alignment, int verticalAlignment) {
     // don't show toolbar in iOS 8 in landscape since there is just no room for that...
     if(isIOS8() && displayHeight < displayWidth) {
         showToolbar = NO;
@@ -337,9 +337,10 @@ void Java_com_codename1_impl_ios_IOSImplementation_editStringAtImpl
                 alignment == 3 ? NSTextAlignmentRight : NSTextAlignmentLeft;
             editingComponent = utf;
             [utf setTextColor:UIColorFromRGB(color, 255)];
-            
+            utf.tintColor = UIColorFromRGB(color, 255);
             if(hintString != nil) {
                 utf.placeholder = hintString;
+                [utf setValue:UIColorFromRGB(hintColor, 255) forKeyPath:@"_placeholderLabel.textColor"];
             }
             
             // INITIAL_CAPS_WORD
@@ -350,7 +351,12 @@ void Java_com_codename1_impl_ios_IOSImplementation_editStringAtImpl
                 if((constraint & 0x200000) == 0x200000) {
                     utf.autocapitalizationType = UITextAutocapitalizationTypeSentences;
                 } else {
-                    utf.autocapitalizationType = UITextAutocapitalizationTypeNone;
+                    // UPPERCASE
+                    if((constraint & 0x800000) == 0x800000) {
+                        utf.autocapitalizationType = UITextAutocapitalizationTypeAllCharacters;
+                    } else {
+                        utf.autocapitalizationType = UITextAutocapitalizationTypeNone;
+                    }
                 }
             }
             
@@ -530,6 +536,7 @@ void Java_com_codename1_impl_ios_IOSImplementation_editStringAtImpl
             [utv.layer setBorderColor:[[UIColor clearColor] CGColor]];
             [utv.layer setBorderWidth:0];
             [utv setTextColor:UIColorFromRGB(color, 255)];
+            utv.tintColor = UIColorFromRGB(color, 255);
             editingComponent = utv;
             if(scale != 1) {
                 float s = ((BRIDGE_CAST UIFont*)font).pointSize / scale;
@@ -788,7 +795,7 @@ void Java_com_codename1_impl_ios_IOSImplementation_scale(float x, float y) {
 }
 
 extern void Java_com_codename1_impl_ios_IOSImplementation_nativeDrawImageGlobalImpl
-(void* peer, int alpha, int x, int y, int width, int height);
+(void* peer, int alpha, int x, int y, int width, int height, int renderingHints);
 
 
 void Java_com_codename1_impl_ios_IOSImplementation_nativeDrawRoundRectGlobalImpl
@@ -801,7 +808,7 @@ void Java_com_codename1_impl_ios_IOSImplementation_nativeDrawRoundRectGlobalImpl
     UIGraphicsEndImageContext();
     
     GLUIImage* glu = [[GLUIImage alloc] initWithImage:img];
-    Java_com_codename1_impl_ios_IOSImplementation_nativeDrawImageGlobalImpl((BRIDGE_CAST void*) glu, 255, x, y, width, height);
+    Java_com_codename1_impl_ios_IOSImplementation_nativeDrawImageGlobalImpl((BRIDGE_CAST void*) glu, 255, x, y, width, height, 0);
 #ifndef CN1_USE_ARC
     [glu release];
 #endif
@@ -831,7 +838,7 @@ void Java_com_codename1_impl_ios_IOSImplementation_nativeFillRoundRectGlobalImpl
     UIGraphicsEndImageContext();
     
     GLUIImage* glu = [[GLUIImage alloc] initWithImage:img];
-    Java_com_codename1_impl_ios_IOSImplementation_nativeDrawImageGlobalImpl((BRIDGE_CAST void*)glu, 255, x, y, width, height);
+    Java_com_codename1_impl_ios_IOSImplementation_nativeDrawImageGlobalImpl((BRIDGE_CAST void*)glu, 255, x, y, width, height, 0);
 #ifndef CN1_USE_ARC
     [glu release];
 #endif
@@ -1132,7 +1139,7 @@ CGContextRef Java_com_codename1_impl_ios_IOSImplementation_drawPath(CN1_THREAD_S
 }
 
 void Java_com_codename1_impl_ios_IOSImplementation_nativeDrawImageMutableImpl
-(void* peer, int alpha, int x, int y, int width, int height) {
+(void* peer, int alpha, int x, int y, int width, int height, int renderingHints) {
     //CN1Log(@"Java_com_codename1_impl_ios_IOSImplementation_nativeDrawImageMutableImpl %i started at %i, %i", (int)peer, x, y);
     UIImage* i = [(BRIDGE_CAST GLUIImage*)peer getImage];
     CGContextRef context = UIGraphicsGetCurrentContext();
@@ -1656,12 +1663,13 @@ void Java_com_codename1_impl_ios_IOSImplementation_imageRgbToIntArrayImpl
 
 
 void Java_com_codename1_impl_ios_IOSImplementation_nativeDrawImageGlobalImpl
-(void* peer, int alpha, int x, int y, int width, int height) {
+(void* peer, int alpha, int x, int y, int width, int height, int renderingHints) {
     //CN1Log(@"Java_com_codename1_impl_ios_IOSImplementation_nativeDrawImageGlobalImpl %i started at %i, %i", (int)peer, x, y);
     if(((BRIDGE_CAST void*)[CodenameOne_GLViewController instance].currentMutableImage) == peer) {
         Java_com_codename1_impl_ios_IOSImplementation_finishDrawingOnImageImpl();
     }
     DrawImage* f = [[DrawImage alloc] initWithArgs:alpha xpos:x ypos:y i:(BRIDGE_CAST GLUIImage*)peer w:width h:height];
+    [f setRenderingHints:renderingHints];
     [CodenameOne_GLViewController upcoming:f];
 #ifndef CN1_USE_ARC
     [f release];

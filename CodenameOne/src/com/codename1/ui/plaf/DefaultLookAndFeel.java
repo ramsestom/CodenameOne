@@ -29,7 +29,10 @@ import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.Graphics;
 import com.codename1.ui.Image;
 import com.codename1.ui.Button;
+import com.codename1.ui.CN;
 import com.codename1.ui.Component;
+import com.codename1.ui.ComponentSelector;
+import com.codename1.ui.ComponentSelector.ComponentClosure;
 import com.codename1.ui.Container;
 import com.codename1.ui.Display;
 import com.codename1.ui.Label;
@@ -1487,12 +1490,20 @@ public class DefaultLookAndFeel extends LookAndFeel implements FocusListener {
                 case Label.LEFT:
                     if (iconHeight > fontHeight) {
                         iconStringHGap = (iconHeight - fontHeight) / 2;
-                        strWidth = drawLabelStringValign(g, l, text, x, y, iconStringHGap, iconHeight, textSpaceW, fontHeight);
+                        if (text.trim().length() > 0) {
+                            strWidth = drawLabelStringValign(g, l, text, x, y, iconStringHGap, iconHeight, textSpaceW, fontHeight);
+                        } else {
+                            strWidth = 0;
+                        }
 
                         g.drawImage(icon, x + strWidth + gap, y);
                     } else {
                         iconStringHGap = (fontHeight - iconHeight) / 2;
-                        strWidth = drawLabelString(g, l, text, x, y, textSpaceW);
+                        if (text.trim().length() > 0) {
+                            strWidth = drawLabelString(g, l, text, x, y, textSpaceW);
+                        } else {
+                            strWidth = 0;
+                        }
 
                         g.drawImage(icon, x + strWidth + gap, y + iconStringHGap);
                     }
@@ -1501,11 +1512,15 @@ public class DefaultLookAndFeel extends LookAndFeel implements FocusListener {
                     if (iconHeight > fontHeight) {
                         iconStringHGap = (iconHeight - fontHeight) / 2;
                         g.drawImage(icon, x, y);
-                        drawLabelStringValign(g, l, text, x + iconWidth + gap, y, iconStringHGap, iconHeight, textSpaceW, fontHeight);
+                        if (text.trim().length() > 0) {
+                            drawLabelStringValign(g, l, text, x + iconWidth + gap, y, iconStringHGap, iconHeight, textSpaceW, fontHeight);
+                        }
                     } else {
                         iconStringHGap = (fontHeight - iconHeight) / 2;
                         g.drawImage(icon, x, y + iconStringHGap);
-                        drawLabelString(g, l, text, x + iconWidth + gap, y, textSpaceW);
+                        if (text.trim().length() > 0) {
+                            drawLabelString(g, l, text, x + iconWidth + gap, y, textSpaceW);
+                        }
                     }
                     break;
                 case Label.BOTTOM:
@@ -1513,23 +1528,30 @@ public class DefaultLookAndFeel extends LookAndFeel implements FocusListener {
 
                         iconStringWGap = (iconWidth - strWidth) / 2;
                         g.drawImage(icon, x, y);
-                        drawLabelString(g, l, text, x + iconStringWGap, y + iconHeight + gap, textSpaceW);
+                        if (text.trim().length() > 0) {
+                            drawLabelString(g, l, text, x + iconStringWGap, y + iconHeight + gap, textSpaceW);
+                        }
                     } else {
                         iconStringWGap = (Math.min(strWidth, textSpaceW) - iconWidth) / 2;
                         g.drawImage(icon, x + iconStringWGap, y);
-                        
-                        drawLabelString(g, l, text, x, y + iconHeight + gap, textSpaceW);
+                        if (text.trim().length() > 0) {
+                            drawLabelString(g, l, text, x, y + iconHeight + gap, textSpaceW);
+                        }
                     }
                     break;
                 case Label.TOP:
                     if (iconWidth > strWidth) { //center align the smaller
 
                         iconStringWGap = (iconWidth - strWidth) / 2;
-                        drawLabelString(g, l, text, x + iconStringWGap, y, textSpaceW);
+                        if (text.trim().length() > 0) {
+                            drawLabelString(g, l, text, x + iconStringWGap, y, textSpaceW);
+                        }
                         g.drawImage(icon, x, y + fontHeight + gap);
                     } else {
                         iconStringWGap = (Math.min(strWidth, textSpaceW) - iconWidth) / 2;
-                        drawLabelString(g, l, text, x, y, textSpaceW);
+                        if (text.trim().length() > 0) {
+                            drawLabelString(g, l, text, x, y, textSpaceW);
+                        }
                         g.drawImage(icon, x + iconStringWGap, y + fontHeight + gap);
                     }
                     break;
@@ -2107,6 +2129,7 @@ public class DefaultLookAndFeel extends LookAndFeel implements FocusListener {
         }
 
         if (pull.getComponentAt(0) != updating && cmpToDraw != pull.getComponentAt(0)) {
+            
             parentForm.registerAnimated(new Animation() {
 
                 int counter = 0;
@@ -2132,14 +2155,25 @@ public class DefaultLookAndFeel extends LookAndFeel implements FocusListener {
                         ((Label) pullDown).setIcon(i.rotate(180));                        
                         parentForm.deregisterAnimated(this);
                     }
-                    cmp.repaint(cmp.getAbsoluteX(), cmp.getAbsoluteY() - getPullToRefreshHeight(), cmp.getWidth(), 
+                    
+                    // Placing the repaint inside a callSerially() because repaint directly
+                    // inside animate causes painting artifacts in many instances
+                    CN.callSerially(new Runnable() {
+                        public void run() {
+                            cmp.repaint(cmp.getAbsoluteX(), cmp.getAbsoluteY()-getPullToRefreshHeight(), cmp.getWidth(), 
                             getPullToRefreshHeight());
+                        }
+                    });
+                    
+                    
+                    
                     return false;
                 }
 
                 public void paint(Graphics g) {
                 }
             });
+            
         }
         if(pull.getComponentAt(0) != cmpToDraw 
                 && cmpToDraw instanceof Label 
@@ -2155,6 +2189,21 @@ public class DefaultLookAndFeel extends LookAndFeel implements FocusListener {
         pull.setX(cmp.getAbsoluteX());
         pull.setY(cmp.getY() -scrollY - getPullToRefreshHeight());
         pull.layoutContainer();
+        
+        // We need to make the InfiniteProgress to animate, otherwise the progress
+        // just stays static.
+        ComponentSelector.select("*", pull).each(new ComponentClosure() {
+            
+
+            @Override
+            public void call(Component c) {
+                if (c instanceof InfiniteProgress) {
+                    ((InfiniteProgress)c).animate(true);
+                } else {
+                    c.animate();
+                }
+            }
+        });
         pull.paintComponent(g);
 
     }

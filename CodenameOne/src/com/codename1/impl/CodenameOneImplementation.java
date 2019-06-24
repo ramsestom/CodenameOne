@@ -43,6 +43,9 @@ import com.codename1.io.tar.TarInputStream;
 import com.codename1.l10n.L10NManager;
 import com.codename1.location.LocationManager;
 import com.codename1.media.Media;
+import com.codename1.media.MediaManager;
+import com.codename1.media.MediaRecorderBuilder;
+import com.codename1.media.RemoteControlListener;
 import com.codename1.messaging.Message;
 import com.codename1.notifications.LocalNotification;
 import com.codename1.payment.Purchase;
@@ -61,6 +64,7 @@ import com.codename1.ui.geom.Shape;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.plaf.Style;
 import com.codename1.ui.util.ImageIO;
+import com.codename1.util.AsyncResource;
 import com.codename1.util.FailureCallback;
 import com.codename1.util.StringUtil;
 import com.codename1.util.SuccessCallback;
@@ -572,7 +576,7 @@ public abstract class CodenameOneImplementation {
      * a rectangle each time it is called.
      */
     private Rectangle paintDirtyTmpRect = new Rectangle();
-    
+
     /**
      * Invoked by the EDT to paint the dirty regions
      */
@@ -595,9 +599,9 @@ public abstract class CodenameOneImplementation {
             int bottomY = 0;
             for (int iter = 0; iter < size; iter++) {
                 Animation ani = paintQueueTemp[iter];
-                
+
                 // might happen due to paint queue removal
-                if(ani == null) {
+                if (ani == null) {
                     continue;
                 }
                 paintQueueTemp[iter] = null;
@@ -3811,6 +3815,29 @@ public abstract class CodenameOneImplementation {
     }
     
     /**
+     * Creates media asynchronously.
+     * @param uri the platform specific location for the sound
+     * @param onCompletion invoked when the audio file finishes playing, may be null
+     * @return a handle that can be used to control the playback of the audio
+     * @see #createMedia(java.lang.String, boolean, java.lang.Runnable) 
+     */
+    public AsyncResource<Media> createMediaAsync(final String uri, final boolean video, final Runnable onCompletion) {
+        final AsyncResource<Media> out = new AsyncResource<Media>();
+        CN.scheduleBackgroundTask(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    out.complete(createMedia(uri, video, onCompletion));
+                } catch (IOException ex) {
+                    out.error(ex);
+                }
+            }
+        });
+        return out;
+    }
+
+    
+    /**
      * Adds a callback to a Media element that will be called when the media finishes playing.
      * 
      * @param media The media to add the callback to.
@@ -3840,9 +3867,36 @@ public abstract class CodenameOneImplementation {
      * @param onCompletion invoked when the audio file finishes playing, may be null
      * @return a handle that can be used to control the playback of the audio
      * @throws java.io.IOException if the URI access fails
+     * @see #createMediaAsync(java.io.InputStream, java.lang.String, java.lang.Runnable) 
      */
     public Media createMedia(InputStream stream, String mimeType, Runnable onCompletion) throws IOException {
         return null;
+    }
+    
+    /**
+     * Creates media asynchronously.
+     *
+     * @param stream the stream containing the media data
+     * @param mimeType the type of the data in the stream
+     * @param onCompletion invoked when the audio file finishes playing, may be null
+     * @return a handle that can be used to control the playback of the audio
+     * @see #createMedia(java.io.InputStream, java.lang.String, java.lang.Runnable) 
+     * @since 7.0
+     */
+    public AsyncResource<Media> createMediaAsync(final InputStream stream, final String mimeType, final Runnable onCompletion) {
+        final AsyncResource<Media> out = new AsyncResource<Media>();
+        CN.scheduleBackgroundTask(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    out.complete(createMedia(stream, mimeType, onCompletion));
+                } catch (Throwable t) {
+                    out.error(t);
+                }
+            }
+            
+        });
+        return out;
     }
     
     /**
@@ -3878,6 +3932,43 @@ public abstract class CodenameOneImplementation {
         }
         return createMedia(uri, false, null);
     }
+    
+    /**
+     * Creates an audio media that can be played in the background.
+     * 
+     * This is run asynchronously so that this call does not block.
+     * 
+     * @param uri the uri of the media can start with jar://, file://, http:// 
+     * (can also use rtsp:// if supported on the platform)
+     * 
+     * @return Media a Media Object that can be used to control the playback 
+     * of the media
+     * 
+     * @throws IOException if creation of media from the given URI has failed
+     */ 
+    public AsyncResource<Media> createBackgroundMediaAsync(final String uri) {
+        
+        if (uri.startsWith("jar://")) {
+            final AsyncResource<Media> out = new AsyncResource<Media>();
+        
+            CN.scheduleBackgroundTask(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        out.complete(createBackgroundMedia(uri));
+                    } catch (IOException ex) {
+                        out.error(ex);
+                    }
+                }
+
+            });
+            return out;
+        } else {
+            return createMediaAsync(uri, false, null);
+        }
+    }
+
+    
 
     /**
      * Creates a soft/weak reference to an object that allows it to be collected
@@ -4021,6 +4112,58 @@ public abstract class CodenameOneImplementation {
      */
     public PeerComponent createBrowserComponent(Object browserComponent) {
         return null;
+    }
+    
+    /**
+     * Posts a message to the window in a BrowserComponent.  This is intended to be an abstraction of the Javascript postMessage() API.
+     * 
+     * <p>This is only overridden by the Javascript port to provide proper CORS handling.  Other ports use the implementation
+     * in BrowserComponent.</p>
+     * 
+     * <p>Web pages wishing to receive messages via this mechanism should register a "message" event listener.  See 
+     * <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage">Javascript postMessage() docs</a>
+     * for more details about this.</p>
+     * @param browserComponent The browser component peer.
+     * @param message The message to send
+     * @param targetOrigin The target origin for the message.
+     * @return True if the implementation handled the message.  False to let BrowserComponent handle it in its default way.
+     * @see BrowserComponent#postMessage(java.lang.String, java.lang.String) 
+     * @see #installMessageListener(java.lang.Object) 
+     * @see #uninstallMessageListener(java.lang.Object) 
+     * @since 7.0
+     */
+    public boolean postMessage(Object browserComponent, String message, String targetOrigin) {
+        return false;
+    }
+    
+    /**
+     * Installs a message listener to allow webpages inside a browser component to send 
+     * messages to CN1 cross-domain.
+     * <p>This will be overridden by the Javascript port only to handle CORS.  Other ports
+     * use the default implementation in {@link BrowserComponent}.
+     * @param browserComponent The browser component peer.
+     * @return True if a message listener was installed.  False otherwise.
+     * @see #postMessage(java.lang.Object, java.lang.String, java.lang.String) 
+     * @see BrowserComponent#onMessage
+     * @see BrowserComponent#postMessage(java.lang.String, java.lang.String) 
+     */
+    public boolean installMessageListener(Object browserComponent) {
+        return false;
+    }
+    
+    /**
+     * Uninstalls a message listener to allow webpages inside a browser component to send 
+     * messages to CN1 cross-domain.
+     * <p>This will be overridden by the Javascript port only to handle CORS.  Other ports
+     * use the default implementation in {@link BrowserComponent}.
+     * @param browserComponent The browser component peer.
+     * @return True if a message listener was installed.  False otherwise.
+     * @see #postMessage(java.lang.Object, java.lang.String, java.lang.String) 
+     * @see BrowserComponent#onMessage
+     * @see BrowserComponent#postMessage(java.lang.String, java.lang.String) 
+     */
+    public boolean uninstallMessageListener(Object browserComponent) {
+        return false;
     }
     
     /**
@@ -5845,6 +5988,46 @@ public abstract class CodenameOneImplementation {
         throw new RuntimeException("Transforms not supported");
     }
     
+    /**
+     * Makes a transform given the specified AffineTransform values.  
+     * @param m00 the X coordinate scaling element of the 3x3 matrix
+     * @param m10 the Y coordinate shearing element of the 3x3 matrix
+     * @param m01 the X coordinate shearing element of the 3x3 matrix
+     * @param m11 the Y coordinate scaling element of the 3x3 matrix
+     * @param m02 the X coordinate translation element of the 3x3 matrix
+     * @param m12 the Y coordinate translation element of the 3x3 matrix
+     * @return 
+     * @since 7.0
+     */
+    public Object makeTransformAffine(double m00,
+            double m10,
+            double m01,
+            double m11,
+            double m02,
+            double m12) {
+        throw new RuntimeException("Transforms not supported");
+    }
+    
+    /**
+     * Sets transform to the given specified AffineTransform values.
+     * @param nativeTransform Platform-specific native transform.
+     * @param m00 the X coordinate scaling element of the 3x3 matrix
+     * @param m10 the Y coordinate shearing element of the 3x3 matrix
+     * @param m01 the X coordinate shearing element of the 3x3 matrix
+     * @param m11 the Y coordinate scaling element of the 3x3 matrix
+     * @param m02 the X coordinate translation element of the 3x3 matrix
+     * @param m12 the Y coordinate translation element of the 3x3 matrix
+     * @since 7.0
+     */
+    public void setTransformAffine(Object nativeTransform, double m00,
+            double m10,
+            double m01,
+            double m11,
+            double m02,
+            double m12) {
+        throw new RuntimeException("Transforms not supported");
+    }
+    
     public void setTransformScale(Object nativeTransform, float scaleX, float scaleY, float scaleZ) {
         setTransformIdentity(nativeTransform);
         transformScale(nativeTransform, scaleX, scaleY, scaleZ);
@@ -6334,7 +6517,58 @@ public abstract class CodenameOneImplementation {
         copyToClipboard(sel.getSelectionAsText());
     }
 
-    
+    /**
+     * Sets the rendering hints for a graphics context.
+     * @param nativeGraphics The native graphics context
+     * @param hints Hints
+     * @see Graphics#RENDERING_HINT_FAST
+     * @since 7.0
+     */
+    public void setRenderingHints(Object nativeGraphics, int hints) {
+        
+    }
+
+    /**
+     * Gets the rendering hints for this graphics context
+     * @param nativeGraphics The native graphics context.
+     * @return The current rendering hints.
+     * @since 7.0
+     * @see Graphics#RENDERING_HINT_FAST
+     */
+    public int getRenderingHints(Object nativeGraphics) {
+        return 0;
+    }
+
+    /**
+     * Starts the remote control service.  This should be implemented
+     * in the platform to handle binding the {@link RemoteControlListener} with
+     * the platform's remote control.
+     * 
+     * <p>This is executed when the user registers a new listener using {@link MediaManager#setRemoteControlListener(com.codename1.media.RemoteControlListener) }</p>
+     * @since 7.0
+     */
+    public void startRemoteControl() {
+        
+    }
+
+    /**
+     * Stops the remote control service.  This should be implemented in the platform
+     * to handle unbinding the {@link RemoteControlListener} with the platform's remote control.
+     * <p>This is executed when a new listener is registered using {@link MediaManager#setRemoteControlListener(com.codename1.media.RemoteControlListener) }</p>
+     * @since 7.0
+     */
+    public void stopRemoteControl() {
+        
+    }
+
+
+
+
+
+
+
+
+
     // END TRANSFORMATION METHODS--------------------------------------------------------------------    
     
     class RPush implements Runnable {
@@ -6383,6 +6617,19 @@ public abstract class CodenameOneImplementation {
      */
     public Media createMediaRecorder(String path, String mimeType) throws IOException{
         return null;
+    }
+    
+    /**
+     * Creates a Media recorder Object which will record from the device mic to
+     * a file in the given path.
+     * 
+     * @param builder THe media builder with settings for the recorder.
+     * getAvailableRecordingMimeTypes()
+     * @since 7.0
+     
+     */
+    public Media createMediaRecorder(MediaRecorderBuilder builder) throws IOException {
+        return createMediaRecorder(builder.getPath(), builder.getMimeType());
     }
     
     /**

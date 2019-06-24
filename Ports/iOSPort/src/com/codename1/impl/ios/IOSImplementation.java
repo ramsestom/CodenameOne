@@ -84,6 +84,7 @@ import com.codename1.location.Geofence;
 import com.codename1.location.GeofenceListener;
 import com.codename1.location.LocationRequest;
 import com.codename1.media.MediaManager;
+import com.codename1.media.MediaRecorderBuilder;
 import com.codename1.notifications.LocalNotification;
 import com.codename1.notifications.LocalNotificationCallback;
 import com.codename1.payment.RestoreCallback;
@@ -379,7 +380,9 @@ public class IOSImplementation extends CodenameOneImplementation {
     
     public static void foldKeyboard() {
         if(instance.isAsyncEditMode()) {
-            final Component cmp = Display.getInstance().getCurrent().getFocused();
+            Form f = Display.getInstance().getCurrent();
+            
+            final Component cmp = f == null ? null : f.getFocused();
             instance.callHideTextEditor();
             nativeInstance.foldVKB();
 
@@ -809,6 +812,7 @@ public class IOSImplementation extends CodenameOneImplementation {
             // give the repaint one cycle to "do its magic...
             final Style stl = currentEditing.getStyle();
             final boolean rtl = UIManager.getInstance().getLookAndFeel().isRTL();
+            final Style hintStyle = currentEditing.getHintLabel() != null ? currentEditing.getHintLabel().getStyle() : stl;
             
             if (current != null) {
                 Component nextComponent = current.getNextComponent(cmp);
@@ -845,6 +849,8 @@ public class IOSImplementation extends CodenameOneImplementation {
                     if(currentEditing != null && currentEditing.getUIManager().isThemeConstant("nativeHintBool", true) && currentEditing.getHint() != null) {
                         hint = currentEditing.getHint();
                     }
+                    int hintColor = hintStyle.getFgColor();
+                    
                     if(isAsyncEditMode()) {
                         // request focus triggers a scroll which flicks the textEditorHidden flag
                         doNotHideTextEditorSemaphore++;
@@ -871,7 +877,8 @@ public class IOSImplementation extends CodenameOneImplementation {
                                 pb,
                                 pl,
                                 pr, 
-                                hint, 
+                                hint,
+                                hintColor,
                                 showToolbar, 
                                 Boolean.TRUE.equals(cmp.getClientProperty("blockCopyPaste")),
                                 currentEditing.getStyle().getAlignment(),
@@ -1457,6 +1464,29 @@ public class IOSImplementation extends CodenameOneImplementation {
     }
 
     @Override
+    public Object makeTransformAffine(double m00, double m10, double m01, double m11, double m02, double m12) {
+        return Matrix.make(new float[]{
+           (float)m00, (float)m10, 0, 0,
+           (float)m01, (float)m11, 0, 0,
+           0, 0, 1, 0,
+           (float)m02, (float)m12, 0, 1
+        });
+    }
+
+    @Override
+    public void setTransformAffine(Object nativeTransform, double m00, double m10, double m01, double m11, double m02, double m12) {
+        ((Matrix)nativeTransform).setData(new float[]{
+           (float)m00, (float)m10, 0, 0,
+           (float)m01, (float)m11, 0, 0,
+           0, 0, 1, 0,
+           (float)m02, (float)m12, 0, 1
+        });
+    }
+    
+    
+    
+
+    @Override
     public Object makeTransformTranslation(float translateX, float translateY, float translateZ) {
         return Matrix.makeTranslation(translateX, translateY, translateZ);
     }
@@ -1810,6 +1840,24 @@ public class IOSImplementation extends CodenameOneImplementation {
         NativeImage nm = (NativeImage)img;
         ng.nativeDrawImage(nm.peer, ng.alpha, x, y, nm.width, nm.height);
     }
+
+    
+    
+    @Override
+    public void setRenderingHints(Object nativeGraphics, int hints) {
+        NativeGraphics ng = (NativeGraphics)nativeGraphics;
+        ng.setRenderingHints(hints);
+    }
+
+    @Override
+    public int getRenderingHints(Object nativeGraphics) {
+        NativeGraphics ng = (NativeGraphics)nativeGraphics;
+        return ng.renderingHints;
+    }
+    
+    
+    
+    
 
     // -------------------------------------------------------------------------
     // METHODS FOR DRAWING SHAPES AND TRANSFORMATIONS
@@ -2270,11 +2318,11 @@ public class IOSImplementation extends CodenameOneImplementation {
     
     // END SHAPES AND TRANSFORMATION CODE
     
-    private void nativeDrawImageMutable(long peer, int alpha, int x, int y, int width, int height) {
-        nativeInstance.nativeDrawImageMutable(peer, alpha, x, y, width, height);
+    private void nativeDrawImageMutable(long peer, int alpha, int x, int y, int width, int height, int renderingHints) {
+        nativeInstance.nativeDrawImageMutable(peer, alpha, x, y, width, height, renderingHints);
     }
-    private void nativeDrawImageGlobal(long peer, int alpha, int x, int y, int width, int height) {
-        nativeInstance.nativeDrawImageGlobal(peer, alpha, x, y, width, height);
+    private void nativeDrawImageGlobal(long peer, int alpha, int x, int y, int width, int height, int renderingHints) {
+        nativeInstance.nativeDrawImageGlobal(peer, alpha, x, y, width, height, renderingHints);
     }
 
     public void drawRGB(Object graphics, int[] rgbData, int offset, int x, int y, int w, int h, boolean processAlpha) {
@@ -2976,15 +3024,58 @@ public class IOSImplementation extends CodenameOneImplementation {
 
     @Override
     public String [] getAvailableRecordingMimeTypes() {
-        return super.getAvailableRecordingMimeTypes();
+        // All of these amount to the same thing.
+        // We record in AAC format, wrapped in an mp4 container.
+        return new String[]{"audio/mp4", "audio/aac", "audio/m4a"};
     }
     
+    private static boolean finishedCreatingAudioRecorder;
+    private static Object createAudioRecorderLock = new Object();
+    private static IOException createAudioRecorderException = null;
+    
+    public static void finishedCreatingAudioRecorder(IOException ex) {
+        createAudioRecorderException = ex;
+        finishedCreatingAudioRecorder = true;
+        synchronized(createAudioRecorderLock) {
+            createAudioRecorderLock.notifyAll();
+        }
+    }
+
     @Override
-    public Media createMediaRecorder(String path, String mimeType) throws IOException{
+    public Media createMediaRecorder(MediaRecorderBuilder builder) throws IOException {
+        return createMediaRecorder(builder.getPath(), builder.getMimeType(), builder.getSamplingRate(), builder.getBitRate(), builder.getAudioChannels(), 0);
+    }
+    
+    
+    
+    @Override
+    public Media createMediaRecorder(final String path, final String mimeType) throws IOException {
+        MediaRecorderBuilder builder = new MediaRecorderBuilder()
+                .path(path)
+                .mimeType(mimeType);
+        return createMediaRecorder(builder);
+    }
+    
+
+    private  Media createMediaRecorder(final String path, final String mimeType, final int sampleRate, final int bitRate, final int audioChannels, final int maxDuration) throws IOException {
         if (!nativeInstance.checkMicrophoneUsage()) {
             throw new RuntimeException("Please add the ios.NSMicrophoneUsageDescription build hint");
         }
-        final long[] peer = new long[] { nativeInstance.createAudioRecorder(path) };
+        finishedCreatingAudioRecorder = false;
+        createAudioRecorderException = null;
+        final long[] peer = new long[] { nativeInstance.createAudioRecorder(path, mimeType, sampleRate, bitRate, audioChannels, maxDuration) };
+        Display.getInstance().invokeAndBlock(new Runnable() {
+            public void run() {
+                while (!finishedCreatingAudioRecorder) {
+                    synchronized(createAudioRecorderLock) {
+                        Util.wait(createAudioRecorderLock);
+                    }
+                }
+            }
+        });
+        if (createAudioRecorderException != null) {
+            throw createAudioRecorderException;
+        }
         return new Media() {
             private boolean playing;
             @Override
@@ -4030,6 +4121,7 @@ public class IOSImplementation extends CodenameOneImplementation {
         private boolean antialiasedSet;
         private boolean antialiasedText;
         private boolean antialiasedTextSet;
+        int renderingHints;
         
         boolean isAntiAliasingSupported() {
             return true;
@@ -4506,7 +4598,7 @@ public class IOSImplementation extends CodenameOneImplementation {
         }
 
         void nativeDrawImage(long peer, int alpha, int x, int y, int width, int height) {
-            nativeDrawImageMutable(peer, alpha, x, y, width, height);
+            nativeDrawImageMutable(peer, alpha, x, y, width, height, renderingHints);
         }
         
         
@@ -4726,6 +4818,14 @@ public class IOSImplementation extends CodenameOneImplementation {
             } finally {
                 GeneralPath.recycle(path);
             }
+        }
+
+        private void setRenderingHints(int hints) {
+            renderingHints = hints;
+        }
+        
+        private int getRenderingHints() {
+            return renderingHints;
         }
 
         
@@ -4953,7 +5053,7 @@ public class IOSImplementation extends CodenameOneImplementation {
         }
 
         void nativeDrawImage(long peer, int alpha, int x, int y, int width, int height) {
-            nativeDrawImageGlobal(peer, alpha, x, y, width, height);
+            nativeDrawImageGlobal(peer, alpha, x, y, width, height, renderingHints);
         }
 
         @Override

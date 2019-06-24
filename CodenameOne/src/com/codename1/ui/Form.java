@@ -43,6 +43,7 @@ import com.codename1.ui.plaf.UIManager;
 import com.codename1.ui.util.EventDispatcher;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -409,13 +410,13 @@ public class Form extends Container {
     }
 
     Component findScrollableChild(Container c) {
-        if(c.isScrollableY()) {
+        if(c.isScrollableYInternal()) {
             return c;
         }
         int count = c.getComponentCount();
         for(int iter = 0 ; iter < count ; iter++) {
             Component comp = c.getComponentAt(iter);
-            if(comp.isScrollableY()) {
+            if(comp.isScrollableYInternal()) {
                 return comp;
             }
             if(comp instanceof Container) {
@@ -746,7 +747,7 @@ public class Form extends Container {
             if(c != null) {
                 return c.getDragRegionStatus(x, y);
             }
-            if(isScrollable()) {
+            if(isScrollableInternal()) {
                 return DRAG_REGION_LIKELY_DRAG_Y;
             }
         }
@@ -1293,6 +1294,7 @@ public class Form extends Container {
             formLayeredPane = new Container(new LayeredLayout()) {
                 @Override
                 protected void paintBackground(Graphics g) {
+                    if (true) return;
                     if(getComponentCount() > 0) {
                         if(isVisible()) {
                             setVisible(false);
@@ -1587,6 +1589,78 @@ public class Form extends Container {
         contentPane.removeComponent(cmp);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public void animateHierarchy(int duration) {
+        contentPane.animateHierarchy(duration);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void animateHierarchyAndWait(int duration) {
+        contentPane.animateHierarchyAndWait(duration);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void animateHierarchyFade(int duration, int startingOpacity) {
+        contentPane.animateHierarchyFade(duration, startingOpacity);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void animateHierarchyFadeAndWait(int duration,
+        int startingOpacity) {
+        contentPane.animateHierarchyFadeAndWait(duration, startingOpacity);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void animateLayout(int duration) {
+        contentPane.animateLayout(duration);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void animateLayoutAndWait(int duration) {
+        contentPane.animateLayoutAndWait(duration);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void animateLayoutFade(int duration, int startingOpacity) {
+        contentPane.animateLayoutFade(duration, startingOpacity);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void animateLayoutFadeAndWait(int duration, int startingOpacity) {
+        contentPane.animateLayoutFadeAndWait(duration, startingOpacity);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void animateUnlayout(int duration, int opacity, Runnable callback) {
+        contentPane.animateUnlayout(duration, opacity, callback);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void animateUnlayoutAndWait(int duration, int opacity) {
+        contentPane.animateUnlayoutAndWait(duration, opacity);
+    }
+    
+    
     final void addComponentToForm(Object constraints, Component cmp) {
         super.addComponent(constraints, cmp);
     }
@@ -2029,6 +2103,12 @@ public class Form extends Container {
                 Log.e(ex);
             }
         }
+        if (getParent() != null) {
+            Form f = getParent().getComponentForm();
+            if (f != null) {
+                f.deregisterAnimated(this);
+            }
+        }
         super.deinitializeImpl();
         animMananger.flush();
         buttonsAwatingRelease = null;
@@ -2045,7 +2125,34 @@ public class Form extends Container {
             Display.impl.setNativeCommands(menuBar.getCommands());
         }
         if (getParent() != null) {
-            getParent().getComponentForm().registerAnimated(this);
+            Form f = getParent().getComponentForm();
+            if (f != null) {
+                f.registerAnimated(this);
+                if (pointerPressedListeners != null) {
+                    for (ActionListener l : (Collection<ActionListener>)pointerPressedListeners.getListenerCollection()) {
+                        f.addPointerPressedListener(l);
+                    }
+                    pointerPressedListeners = null;
+                }
+                if (pointerDraggedListeners != null) {
+                    for (ActionListener l : (Collection<ActionListener>)pointerDraggedListeners.getListenerCollection()) {
+                        f.addPointerDraggedListener(l);
+                    }
+                    pointerDraggedListeners = null;
+                }
+                if (pointerReleasedListeners != null) {
+                    for (ActionListener l : (Collection<ActionListener>)pointerReleasedListeners.getListenerCollection()) {
+                        f.addPointerReleasedListener(l);
+                    }
+                    pointerReleasedListeners = null;
+                }
+                if (longPressListeners != null) {
+                    for (ActionListener l : (Collection<ActionListener>)longPressListeners.getListenerCollection()) {
+                        f.addLongPressListener(l);
+                    }
+                    longPressListeners = null;
+                }
+            }
         }
     }
 
@@ -3968,12 +4075,12 @@ public class Form extends Container {
             }
             while (parent != null) {
                 if(parent == this) {
-                    if(getContentPane().isScrollable()) {
+                    if(getContentPane().isScrollableInternal()) {
                         getContentPane().moveScrollTowards(direction, c);
                     }
                     
                 }else{
-                    if (parent.isScrollable()) {
+                    if (parent.isScrollableInternal()) {
                         return parent.moveScrollTowards(direction, c);
                     }
                 }
@@ -4010,10 +4117,10 @@ public class Form extends Container {
         initFocused();
         Container parent = c.getParent();
         while (parent != null) {
-            if (parent.isScrollable()) {
+            if (parent.isScrollableInternal()) {
                 if(parent == this) {
                     // special case for Form
-                    if(getContentPane().isScrollable()) {
+                    if(getContentPane().isScrollableInternal()) {
                         getContentPane().scrollComponentToVisible(c);
                     }
                 } else {
@@ -4114,6 +4221,24 @@ public class Form extends Container {
     public boolean isScrollableY() {
         return getContentPane().isScrollableY();
     }
+
+    @Override
+    boolean isScrollableInternal() {
+        return false;
+    }
+
+    @Override
+    boolean isScrollableXInternal() {
+        return false;
+    }
+
+    @Override
+    boolean isScrollableYInternal() {
+        return false;
+    }
+    
+    
+    
 
     /**
      * {@inheritDoc}

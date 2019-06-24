@@ -205,10 +205,10 @@ extern void Java_com_codename1_impl_ios_IOSImplementation_nativeDrawArcMutableIm
 (int color, int alpha, int x, int y, int width, int height, int startAngle, int angle);
 
 extern void Java_com_codename1_impl_ios_IOSImplementation_nativeDrawImageMutableImpl
-(void* peer, int alpha, int x, int y, int width, int height);
+(void* peer, int alpha, int x, int y, int width, int height, int renderingHints);
 
 extern void Java_com_codename1_impl_ios_IOSImplementation_nativeDrawImageGlobalImpl
-(void* peer, int alpha, int x, int y, int width, int height);
+(void* peer, int alpha, int x, int y, int width, int height, int renderingHints);
 
 extern void Java_com_codename1_impl_ios_IOSImplementation_nativeTileImageGlobalImpl
 (void* peer, int alpha, int x, int y, int width, int height);
@@ -249,7 +249,7 @@ extern void* Java_com_codename1_impl_ios_IOSImplementation_createImageFromARGBIm
 extern void Java_com_codename1_impl_ios_IOSImplementation_editStringAtImpl
 (CN1_THREAD_STATE_MULTI_ARG int x, int y, int w, int h, void* peer, int isSingleLine, int rows, int maxSize,
  int constraint, const char* str, int len, BOOL dialogHeight, int color, JAVA_LONG imagePeer,
- int padTop, int padBottom, int padLeft, int padRight, NSString* hintString, BOOL showToolbar, BOOL blockCopyPaste, int alignment, int verticalAlignment);
+ int padTop, int padBottom, int padLeft, int padRight, NSString* hintString, int hintColor, BOOL showToolbar, BOOL blockCopyPaste, int alignment, int verticalAlignment);
 
 extern void Java_com_codename1_impl_ios_IOSImplementation_resetAffineGlobal();
 
@@ -400,10 +400,10 @@ NSString* toNSString(JAVA_OBJECT str) {
 }
 #endif
 
-void com_codename1_impl_ios_IOSNative_editStringAt___int_int_int_int_long_boolean_int_int_int_java_lang_String_boolean_int_long_int_int_int_int_java_lang_String_boolean_boolean_int_int(CN1_THREAD_STATE_MULTI_ARG
+void com_codename1_impl_ios_IOSNative_editStringAt___int_int_int_int_long_boolean_int_int_int_java_lang_String_boolean_int_long_int_int_int_int_java_lang_String_int_boolean_boolean_int_int(CN1_THREAD_STATE_MULTI_ARG
                                                                                                                                                                          JAVA_OBJECT instanceObject, JAVA_INT n1, JAVA_INT n2, JAVA_INT n3, JAVA_INT n4, JAVA_LONG n5, JAVA_BOOLEAN n6, JAVA_INT n7,
                                                                                                                                                                          JAVA_INT n8, JAVA_INT n9, JAVA_OBJECT n10, JAVA_BOOLEAN forceSlide,
-                                                                                                                                                                         JAVA_INT color, JAVA_LONG imagePeer, JAVA_INT padTop, JAVA_INT padBottom, JAVA_INT padLeft, JAVA_INT padRight, JAVA_OBJECT hint, JAVA_BOOLEAN showToolbar, JAVA_BOOLEAN blockCopyPaste,
+                                                                                                                                                                         JAVA_INT color, JAVA_LONG imagePeer, JAVA_INT padTop, JAVA_INT padBottom, JAVA_INT padLeft, JAVA_INT padRight, JAVA_OBJECT hint, JAVA_INT hintColor, JAVA_BOOLEAN showToolbar, JAVA_BOOLEAN blockCopyPaste,
                                                                                                                                                                          JAVA_INT alignment, JAVA_INT verticalAlignment)
 {
     POOL_BEGIN();
@@ -412,7 +412,7 @@ void com_codename1_impl_ios_IOSNative_editStringAt___int_int_int_int_long_boolea
     char cc[l];
     memcpy(cc, chr, l);
     Java_com_codename1_impl_ios_IOSImplementation_editStringAtImpl(CN1_THREAD_STATE_PASS_ARG n1, n2, n3, n4, n5, n6, n7, n8, n9, cc, 0, forceSlide, color, imagePeer,
-                                                                   padTop, padBottom, padLeft, padRight, toNSString(CN1_THREAD_STATE_PASS_ARG hint), showToolbar, blockCopyPaste, alignment, verticalAlignment);
+                                                                   padTop, padBottom, padLeft, padRight, toNSString(CN1_THREAD_STATE_PASS_ARG hint), hintColor, showToolbar, blockCopyPaste, alignment, verticalAlignment);
     POOL_END();
 }
 extern float scaleValue;
@@ -959,20 +959,20 @@ void com_codename1_impl_ios_IOSNative_nativeDrawStringGlobal___int_int_long_java
     //XMLVM_END_WRAPPER
 }
 
-void com_codename1_impl_ios_IOSNative_nativeDrawImageMutable___long_int_int_int_int_int(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_LONG n1, JAVA_INT alpha, JAVA_INT n2, JAVA_INT n3, JAVA_INT n4, JAVA_INT n5)
+void com_codename1_impl_ios_IOSNative_nativeDrawImageMutable___long_int_int_int_int_int_int(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_LONG n1, JAVA_INT alpha, JAVA_INT n2, JAVA_INT n3, JAVA_INT n4, JAVA_INT n5, JAVA_INT renderingHints)
 {
     //XMLVM_BEGIN_WRAPPER[com_codename1_impl_ios_IOSNative_nativeDrawImageMutable___long_int_int_int_int]
     POOL_BEGIN();
-    Java_com_codename1_impl_ios_IOSImplementation_nativeDrawImageMutableImpl((void *)n1, alpha, n2, n3, n4, n5);
+    Java_com_codename1_impl_ios_IOSImplementation_nativeDrawImageMutableImpl((void *)n1, alpha, n2, n3, n4, n5, renderingHints);
     POOL_END();
     //XMLVM_END_WRAPPER
 }
 
-void com_codename1_impl_ios_IOSNative_nativeDrawImageGlobal___long_int_int_int_int_int(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_LONG n1, JAVA_INT alpha, JAVA_INT n2, JAVA_INT n3, JAVA_INT n4, JAVA_INT n5)
+void com_codename1_impl_ios_IOSNative_nativeDrawImageGlobal___long_int_int_int_int_int_int(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_LONG n1, JAVA_INT alpha, JAVA_INT n2, JAVA_INT n3, JAVA_INT n4, JAVA_INT n5, JAVA_INT renderingHints)
 {
     //XMLVM_BEGIN_WRAPPER[com_codename1_impl_ios_IOSNative_nativeDrawImageGlobal___long_int_int_int_int]
     POOL_BEGIN();
-    Java_com_codename1_impl_ios_IOSImplementation_nativeDrawImageGlobalImpl((void *)n1, alpha, n2, n3, n4, n5);
+    Java_com_codename1_impl_ios_IOSImplementation_nativeDrawImageGlobalImpl((void *)n1, alpha, n2, n3, n4, n5, renderingHints);
     POOL_END();
     //XMLVM_END_WRAPPER
 }
@@ -2117,6 +2117,7 @@ void com_codename1_impl_ios_IOSNative_cleanupAudio___long(CN1_THREAD_STATE_MULTI
 
 JAVA_LONG com_codename1_impl_ios_IOSNative_createAudio = 0;
 JAVA_LONG com_codename1_impl_ios_IOSNative_createAudio___java_lang_String_java_lang_Runnable(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_OBJECT uri, JAVA_OBJECT onCompletion) {
+    __block NSError* error = nil;
     dispatch_sync(dispatch_get_main_queue(), ^{
         POOL_BEGIN();
         NSString* ns = toNSString(CN1_THREAD_GET_STATE_PASS_ARG uri);
@@ -2124,14 +2125,26 @@ JAVA_LONG com_codename1_impl_ios_IOSNative_createAudio___java_lang_String_java_l
             ns = fixFilePath(ns);
             NSURL* nu = [NSURL fileURLWithPath:ns];
             ns = [nu absoluteString];
+            NSLog(@"%@", ns);
         }
-        com_codename1_impl_ios_IOSNative_createAudio = (JAVA_LONG)((BRIDGE_CAST void*)[[AudioPlayer alloc] initWithURL:ns callback:onCompletion]);
+        com_codename1_impl_ios_IOSNative_createAudio = (JAVA_LONG)((BRIDGE_CAST void*)[[AudioPlayer alloc] initWithURL:ns callback:onCompletion error:&error]);
+        if (error != nil) {
+            [error retain];
+        }
         POOL_END();
     });
+    if (error != nil) {
+        JAVA_OBJECT ex = __NEW_java_io_IOException(CN1_THREAD_STATE_PASS_SINGLE_ARG);
+        java_io_IOException___INIT_____java_lang_String(CN1_THREAD_STATE_PASS_ARG ex, fromNSString(CN1_THREAD_GET_STATE_PASS_ARG [error localizedDescription]));
+        [error release];
+        throwException(threadStateData, ex);
+        return 0;
+    }
     return com_codename1_impl_ios_IOSNative_createAudio;
 }
 
 JAVA_LONG com_codename1_impl_ios_IOSNative_createAudio___byte_1ARRAY_java_lang_Runnable(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_OBJECT b, JAVA_OBJECT onCompletion) {
+    __block NSError* error = nil;
     dispatch_sync(dispatch_get_main_queue(), ^{
         POOL_BEGIN();
 #ifndef NEW_CODENAME_ONE_VM
@@ -2143,9 +2156,19 @@ JAVA_LONG com_codename1_impl_ios_IOSNative_createAudio___byte_1ARRAY_java_lang_R
         int len = ((JAVA_ARRAY)b)->length;
 #endif
         NSData* d = [NSData dataWithBytes:data length:len];
-        com_codename1_impl_ios_IOSNative_createAudio = (JAVA_LONG)((BRIDGE_CAST void*)[[AudioPlayer alloc] initWithNSData:d callback:onCompletion]);
+        com_codename1_impl_ios_IOSNative_createAudio = (JAVA_LONG)((BRIDGE_CAST void*)[[AudioPlayer alloc] initWithNSData:d callback:onCompletion error:&error]);
+        if (error != nil) {
+            [error retain];
+        }
         POOL_END();
     });
+    if (error != nil) {
+        JAVA_OBJECT ex = __NEW_java_io_IOException(CN1_THREAD_STATE_PASS_SINGLE_ARG);
+        java_io_IOException___INIT_____java_lang_String(CN1_THREAD_STATE_PASS_ARG ex, fromNSString(CN1_THREAD_GET_STATE_PASS_ARG [error localizedDescription]));
+        [error release];
+        throwException(threadStateData, ex);
+        return 0;
+    }
     return com_codename1_impl_ios_IOSNative_createAudio;
 }
 
@@ -4877,10 +4900,12 @@ void com_codename1_impl_ios_IOSNative_nsDataToByteArray___long_byte_1ARRAY(CN1_T
 }
 
 
-JAVA_LONG com_codename1_impl_ios_IOSNative_createAudioRecorder___java_lang_String(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject,
-                                                                                  JAVA_OBJECT  destinationFile) {
+JAVA_LONG com_codename1_impl_ios_IOSNative_createAudioRecorder___java_lang_String_java_lang_String_int_int_int_int(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject,
+                                                                                  JAVA_OBJECT  destinationFile, JAVA_OBJECT mimeType, JAVA_INT sampleRate, JAVA_INT bitRate, JAVA_INT channels, JAVA_INT maxDuration) {
 #ifdef INCLUDE_MICROPHONE_USAGE
     __block AVAudioRecorder* recorder = nil;
+     
+    __block NSString *exStr = nil;
     dispatch_sync(dispatch_get_main_queue(), ^{
         POOL_BEGIN();
         AVAudioSession *audioSession = [AVAudioSession sharedInstance];
@@ -4888,12 +4913,16 @@ JAVA_LONG com_codename1_impl_ios_IOSNative_createAudioRecorder___java_lang_Strin
         [audioSession setCategory :AVAudioSessionCategoryPlayAndRecord error:&err];
         if(err){
             CN1Log(@"audioSession: %@ %d %@", [err domain], [err code], [[err userInfo] description]);
+            exStr = [[err userInfo] description];
+            POOL_END();
             return;
         }
         err = nil;
         [audioSession setActive:YES error:&err];
         if(err){
             CN1Log(@"audioSession: %@ %d %@", [err domain], [err code], [[err userInfo] description]);
+            exStr = [[err userInfo] description];
+            POOL_END();
             return;
         }
         if (isIOS7()) {
@@ -4911,10 +4940,13 @@ JAVA_LONG com_codename1_impl_ios_IOSNative_createAudioRecorder___java_lang_Strin
                     }
                     
                     CN1Log(@"Recording audio to: %@", filePath);
+                    
+                    // Ignoring bit rate setting as ios doesn't have direct equivalent
+                    // We only support the one mimetype for now also.
                     NSDictionary *recordSettings = [[NSDictionary alloc] initWithObjectsAndKeys:
-                                                    [NSNumber numberWithFloat: 16000.0], AVSampleRateKey,
+                                                    [NSNumber numberWithFloat: (JAVA_FLOAT)sampleRate], AVSampleRateKey,     
                                                     [NSNumber numberWithInt: kAudioFormatMPEG4AAC],AVFormatIDKey,
-                                                    [NSNumber numberWithInt: 1], AVNumberOfChannelsKey,
+                                                    [NSNumber numberWithInt: channels], AVNumberOfChannelsKey,
                                                     nil];
                     NSError *error = nil;
                     recorder = [[AVAudioRecorder alloc] initWithURL: [NSURL fileURLWithPath:ns]
@@ -4922,10 +4954,16 @@ JAVA_LONG com_codename1_impl_ios_IOSNative_createAudioRecorder___java_lang_Strin
                                                               error: &error];
                     if(error != nil) {
                         CN1Log(@"Error in recording: %@", [error localizedDescription]);
+                        exStr = [error localizedDescription];
+                        POOL_END();
+                        return;
                     }
                     recorder.delegate = [CodenameOne_GLViewController instance];
+                    com_codename1_impl_ios_IOSImplementation_finishedCreatingAudioRecorder___java_io_IOException(CN1_THREAD_GET_STATE_PASS_ARG JAVA_NULL);
                 } else {
                     recorder = nil;
+                    exStr = @"Permission to record was denied";
+                    
                 }
                 POOL_END();
             }];
@@ -4934,7 +4972,7 @@ JAVA_LONG com_codename1_impl_ios_IOSNative_createAudioRecorder___java_lang_Strin
             
             // cleanup older file if it exists in this location
             NSFileManager* fm = [[NSFileManager alloc] init];
-            NSString* ns = fixFilePath(ns);
+            NSString* ns = fixFilePath(filePath);
             if([fm fileExistsAtPath:ns]) {
                 [fm removeItemAtPath:ns error:nil];
             }
@@ -4951,16 +4989,28 @@ JAVA_LONG com_codename1_impl_ios_IOSNative_createAudioRecorder___java_lang_Strin
                                                       error: &error];
             if(error != nil) {
                 CN1Log(@"Error in recording: %@", [error localizedDescription]);
+                exStr = [error localizedDescription];
+                POOL_END();
+                return;
             }
             recorder.delegate = [CodenameOne_GLViewController instance];
         }
         POOL_END();
     });
-    return (JAVA_LONG)((BRIDGE_CAST void*)recorder);
+    if (exStr != nil) {
+        JAVA_OBJECT ex = __NEW_java_io_IOException(CN1_THREAD_STATE_PASS_SINGLE_ARG);
+        java_io_IOException___INIT_____java_lang_String(CN1_THREAD_STATE_PASS_ARG ex, fromNSString(CN1_THREAD_GET_STATE_PASS_ARG exStr));
+        throwException(threadStateData, ex);
+        return (JAVA_LONG)0;
+    } else {
+        com_codename1_impl_ios_IOSImplementation_finishedCreatingAudioRecorder___java_io_IOException(CN1_THREAD_GET_STATE_PASS_ARG JAVA_NULL);
+        return (JAVA_LONG)((BRIDGE_CAST void*)recorder);
+    }
 #else
     return (JAVA_LONG)0;
 #endif
 }
+
 
 void com_codename1_impl_ios_IOSNative_startAudioRecord___long(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject,
                                                               JAVA_LONG  peer) {
@@ -5372,7 +5422,7 @@ JAVA_OBJECT com_codename1_impl_ios_IOSNative_sqlCursorValueAtColumnString___long
 #endif // NEW_CODENAME_ONE_VM
 
 
-JAVA_BOOLEAN com_codename1_impl_ios_IOSNative_sqlCursorNullValueAtColumn___long_int(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_LONG statement, JAVA_INT col) {
+JAVA_BOOLEAN com_codename1_impl_ios_IOSNative_sqlCursorNullValueAtColumn___long_int_R_boolean(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_LONG statement, JAVA_INT col) {
     return (sqlite3_column_type((sqlite3_stmt*)statement, col) == SQLITE_NULL);
 }
 
@@ -5431,6 +5481,14 @@ JAVA_BOOLEAN com_codename1_impl_ios_IOSNative_canMakePayments__(CN1_THREAD_STATE
 }
 
 NSLocale *currentLocale = NULL;
+NSLocale *deviceLocale = NULL;
+
+NSLocale* cn1DeviceLocale() {
+    if (deviceLocale == NULL) {
+        deviceLocale = [NSLocale localeWithLocaleIdentifier:[[NSLocale preferredLanguages] objectAtIndex:0] ];
+    }
+    return deviceLocale;
+}
 
 void com_codename1_impl_ios_IOSNative_setLocale___java_lang_String(CN1_THREAD_STATE_MULTI_ARG instanceObject, JAVA_OBJECT localeStr) {
     POOL_BEGIN();
@@ -5439,7 +5497,7 @@ void com_codename1_impl_ios_IOSNative_setLocale___java_lang_String(CN1_THREAD_ST
         [currentLocale release];
     }
 #endif
-    currentLocale = [[NSLocale alloc] initWithLocaleIdentifier:toNSString(CN1_THREAD_STATE_PASS_ARG localeStr)];
+    currentLocale = cn1DeviceLocale();
     POOL_END();
 }
 
@@ -5452,7 +5510,10 @@ JAVA_OBJECT com_codename1_impl_ios_IOSNative_formatInt___int(CN1_THREAD_STATE_MU
 #endif
     if (currentLocale != NULL) {
         formatter.locale = currentLocale;
+    } else {
+        formatter.locale = cn1DeviceLocale();
     }
+    
     [formatter setNumberStyle:NSNumberFormatterDecimalStyle];
     JAVA_OBJECT o = fromNSString(CN1_THREAD_STATE_PASS_ARG [formatter stringFromNumber:[NSNumber numberWithInt:i]]);
     POOL_END();
@@ -5468,6 +5529,8 @@ JAVA_OBJECT com_codename1_impl_ios_IOSNative_formatDouble___double(CN1_THREAD_ST
 #endif
     if (currentLocale != NULL) {
         formatter.locale = currentLocale;
+    } else {
+        formatter.locale = cn1DeviceLocale();
     }
     
     [formatter setNumberStyle:NSNumberFormatterDecimalStyle];
@@ -5485,6 +5548,8 @@ JAVA_DOUBLE com_codename1_impl_ios_IOSNative_parseDouble___java_lang_String(CN1_
 #endif
     if (currentLocale != NULL) {
         formatter.locale = currentLocale;
+    } else {
+        formatter.locale = cn1DeviceLocale();
     }
     [formatter setNumberStyle:NSNumberFormatterDecimalStyle];
     NSString* ns = toNSString(CN1_THREAD_STATE_PASS_ARG d);
@@ -5502,6 +5567,8 @@ JAVA_OBJECT com_codename1_impl_ios_IOSNative_formatCurrency___double(CN1_THREAD_
 #endif
     if (currentLocale != NULL) {
         formatter.locale = currentLocale;
+    } else {
+        formatter.locale = cn1DeviceLocale();
     }
     [formatter setNumberStyle:NSNumberFormatterCurrencyStyle];
     JAVA_OBJECT o = fromNSString(CN1_THREAD_STATE_PASS_ARG [formatter stringFromNumber:[NSNumber numberWithDouble:d]]);
@@ -5518,6 +5585,8 @@ JAVA_OBJECT com_codename1_impl_ios_IOSNative_formatDate___long(CN1_THREAD_STATE_
 #endif
     if (currentLocale != NULL) {
         formatter.locale = currentLocale;
+    } else {
+        formatter.locale = cn1DeviceLocale();
     }
     NSDate* date = [NSDate dateWithTimeIntervalSince1970:(d / 1000)];
     [formatter setDateStyle:NSDateFormatterMediumStyle];
@@ -5535,6 +5604,8 @@ JAVA_OBJECT com_codename1_impl_ios_IOSNative_formatDateShort___long(CN1_THREAD_S
 #endif
     if (currentLocale != NULL) {
         formatter.locale = currentLocale;
+    } else {
+        formatter.locale = cn1DeviceLocale();
     }
     NSDate* date = [NSDate dateWithTimeIntervalSince1970:(d / 1000)];
     [formatter setDateStyle:NSDateFormatterShortStyle];
@@ -5552,6 +5623,8 @@ JAVA_OBJECT com_codename1_impl_ios_IOSNative_formatDateTime___long(CN1_THREAD_ST
 #endif
     if (currentLocale != NULL) {
         formatter.locale = currentLocale;
+    } else {
+        formatter.locale = cn1DeviceLocale();
     }
     NSDate* date = [NSDate dateWithTimeIntervalSince1970:(d / 1000)];
     [formatter setDateStyle:NSDateFormatterLongStyle];
@@ -5570,6 +5643,8 @@ JAVA_OBJECT com_codename1_impl_ios_IOSNative_formatDateTimeMedium___long(CN1_THR
 #endif
     if (currentLocale != NULL) {
         formatter.locale = currentLocale;
+    } else {
+        formatter.locale = cn1DeviceLocale();
     }
     NSDate* date = [NSDate dateWithTimeIntervalSince1970:(d / 1000)];
     [formatter setDateStyle:NSDateFormatterMediumStyle];
@@ -5588,6 +5663,8 @@ JAVA_OBJECT com_codename1_impl_ios_IOSNative_formatDateTimeShort___long(CN1_THRE
 #endif
     if (currentLocale != NULL) {
         formatter.locale = currentLocale;
+    } else {
+        formatter.locale = cn1DeviceLocale();
     }
     NSDate* date = [NSDate dateWithTimeIntervalSince1970:(d / 1000)];
     [formatter setDateStyle:NSDateFormatterShortStyle];
@@ -5606,6 +5683,8 @@ JAVA_OBJECT com_codename1_impl_ios_IOSNative_getCurrencySymbol__(CN1_THREAD_STAT
 #endif
     if (currentLocale != NULL) {
         formatter.locale = currentLocale;
+    } else {
+        formatter.locale = cn1DeviceLocale();
     }
     JAVA_OBJECT c = fromNSString(CN1_THREAD_STATE_PASS_ARG [formatter currencyCode]);
     POOL_END();
@@ -6283,6 +6362,7 @@ void com_codename1_impl_ios_IOSNative_openDatePicker___int_long_int_int_int_int_
         } else {
             datePickerView = [[UIDatePicker alloc] initWithFrame:CGRectMake(0, 40, 0, 0)];
         }
+        datePickerView.locale = cn1DeviceLocale();
         switch(type) {
             case 1:
                 datePickerView.datePickerMode = UIDatePickerModeDate;
@@ -7749,9 +7829,9 @@ JAVA_INT com_codename1_impl_ios_IOSNative_getNSDataSize___long_R_int(CN1_THREAD_
     return com_codename1_impl_ios_IOSNative_getNSDataSize___long(CN1_THREAD_STATE_PASS_ARG instanceObject, nsData);
 }
 
-JAVA_LONG com_codename1_impl_ios_IOSNative_createAudioRecorder___java_lang_String_R_long(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject,
-                                                                                         JAVA_OBJECT  destinationFile) {
-    return com_codename1_impl_ios_IOSNative_createAudioRecorder___java_lang_String(CN1_THREAD_STATE_PASS_ARG instanceObject, destinationFile);
+JAVA_LONG com_codename1_impl_ios_IOSNative_createAudioRecorder___java_lang_String_java_lang_String_int_int_int_int_R_long(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject,
+                                                                                         JAVA_OBJECT  destinationFile, JAVA_OBJECT mimeType, JAVA_INT sampleRate, JAVA_INT bitRate, JAVA_INT channels, JAVA_INT maxDuration ) {
+    return com_codename1_impl_ios_IOSNative_createAudioRecorder___java_lang_String_java_lang_String_int_int_int_int(CN1_THREAD_STATE_PASS_ARG instanceObject, destinationFile, mimeType, sampleRate, bitRate, channels, maxDuration);
 }
 
 JAVA_BOOLEAN com_codename1_impl_ios_IOSNative_sqlDbExists___java_lang_String_R_boolean(CN1_THREAD_STATE_MULTI_ARG JAVA_OBJECT instanceObject, JAVA_OBJECT name) {

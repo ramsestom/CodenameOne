@@ -578,7 +578,7 @@ public class Container extends Component implements Iterable<Component>{
             }
         }
         this.layout = layout;
-        if(layout instanceof BorderLayout && isScrollable()) {
+        if(layout instanceof BorderLayout && isScrollableInternal()) {
             setScrollable(false);
         }
     }
@@ -648,11 +648,11 @@ public class Container extends Component implements Iterable<Component>{
      * @return the layout width
      */
     public int getLayoutWidth() {
-        if (isScrollableX()) {
+        if (isScrollableXInternal()) {
             return Math.max(getWidth(), getPreferredW());
         } else {
             Container parent = getScrollableParent();
-            if (parent != null && parent.isScrollableX()) {
+            if (parent != null && parent.isScrollableXInternal()) {
                 return Math.max(getWidth(), getPreferredW());
             }
             int width = getWidth();
@@ -715,7 +715,7 @@ public class Container extends Component implements Iterable<Component>{
     private Container getScrollableParent() {
         Container parent = getParent();
         while (parent != null) {
-            if (parent.isScrollable()) {
+            if (parent.isScrollableInternal()) {
                 return parent;
             }
             parent = parent.getParent();
@@ -1598,6 +1598,8 @@ public class Container extends Component implements Iterable<Component>{
             return binarySearchFirstIntersectionY(y1, y2, pos+1, end);
         }
     }
+
+
     
     /**
      * {@inheritDoc}
@@ -1625,19 +1627,20 @@ public class Container extends Component implements Iterable<Component>{
             }
         }
         CodenameOneImplementation impl = Display.impl;
-        if(this.isDontRecurseContainer()) {
+        Graphics cmpG = impl.getComponentScreenGraphics(this, g);
+        if(dontRecurseContainer) {
             for(int iter = startIter ; iter < size ; iter++) {
                 Component cmp = components.get(iter);
                 if(cmp.getClass() == Container.class) {
                     paintContainerChildrenForAnimation((Container)cmp, g);
                 } else {
-                    cmp.paintInternal(impl.getComponentScreenGraphics(this, g), false);
+                    cmp.paintInternal(cmpG, false);
                 }
             }
         } else {
             for(int iter = startIter ; iter < size ; iter++) {
                 Component cmp = components.get(iter);
-                cmp.paintInternal(impl.getComponentScreenGraphics(this, g), false);
+                cmp.paintInternal(cmpG, false);
             }
         }
         int tx = g.getTranslateX();
@@ -1684,14 +1687,17 @@ public class Container extends Component implements Iterable<Component>{
                 startIndex = 0;
                 endIndex = indexOfComponent;
             }
-
+            int baseX = cmp.getAbsoluteX();
+            int baseY = cmp.getAbsoluteY();
             for (int i = startIndex; i < endIndex; i++) {
                 Component cmp2 = (Component) components.get(i);
+                Rectangle cmpBounds = cmp2.getBounds();
+                Dimension cmpSize = cmpBounds.getSize();
                 if(Rectangle.intersects(x, y, w, h,
-                        cmp2.getAbsoluteX() + cmp2.getScrollX(),
-                        cmp2.getAbsoluteY() + cmp2.getScrollY(),
-                        cmp2.getBounds().getSize().getWidth(),
-                        cmp2.getBounds().getSize().getHeight())){
+                        cmpBounds.getX() + baseX,
+                        cmpBounds.getY() + baseY,
+                        cmpSize.getWidth(),
+                        cmpSize.getHeight())){
                     cmp2.paintInternal(g, false);
                 }
             }
@@ -1795,7 +1801,7 @@ public class Container extends Component implements Iterable<Component>{
      * @param c the component that will be scrolling for visibility
      */
     public void scrollComponentToVisible(final Component c) {
-        if (isScrollable()) {
+        if (isScrollableInternal()) {
             if (c != null) {
                 Rectangle r = c.getVisibleBounds();
                 if (c.getParent() != null) {
@@ -1854,7 +1860,7 @@ public class Container extends Component implements Iterable<Component>{
      * @return true if next Component is now visible.
      */    
     boolean moveScrollTowards(int direction, Component next) {
-        if (isScrollable()) {
+        if (isScrollableInternal()) {
             Component current = null;
             Form f = getComponentForm();
             current = f.getFocused();
@@ -2096,7 +2102,7 @@ public class Container extends Component implements Iterable<Component>{
      * @see #getResponderAt(int, int) 
      */
     public Component getComponentAt(int x, int y) {
-        if (!contains(x, y)) {
+        if (!contains(x, y) || !isVisible()) {
             return null;
         }
         int startIter = 0;
@@ -2120,7 +2126,7 @@ public class Container extends Component implements Iterable<Component>{
         Component component = null;
         for (int i = count - 1; i >= startIter; i--) {
             Component cmp = getComponentAt(i);
-            if (cmp.contains(x, y)) {
+            if (cmp.contains(x, y) && cmp.isVisible()) {
                 // this is a workaround for the issue mentioned here: https://stackoverflow.com/questions/44112337/action-listening-for-container-itself-and-sub-buttons/44125364
                 // the block lead has some weird behaviors with overlap hierarchies, not sure if this is the best solution
                 if(component != null && component.isBlockLead()) {

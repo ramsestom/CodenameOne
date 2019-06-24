@@ -24,13 +24,14 @@ package com.codename1.impl.android;
 
 import com.codename1.db.Cursor;
 import com.codename1.db.Row;
+import com.codename1.db.RowExt;
 import java.io.IOException;
 
 /**
  *
  * @author Chen
  */
-public class AndroidCursor implements Cursor, Row{
+public class AndroidCursor implements Cursor, RowExt {
     
     private android.database.Cursor c;
     private int last_read_column_index = -1;
@@ -137,7 +138,7 @@ public class AndroidCursor implements Cursor, Row{
     }
     
     @Override
-    public Boolean wasNull() throws IOException {
+    public boolean wasNull() throws IOException {
         if (last_read_column_index<0){return true;}
         return c.isNull(last_read_column_index);
     }

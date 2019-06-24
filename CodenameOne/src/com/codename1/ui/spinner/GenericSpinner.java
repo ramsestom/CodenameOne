@@ -350,6 +350,17 @@ public class GenericSpinner extends BaseSpinner {
     public void setRenderer(ListCellRenderer renderer) {
         setRenderer(0, renderer);
     }
+    
+    
+    public void initSpinnerRenderer(int offset) {
+    	 if(spin != null && spin[offset] != null) {
+             spin[offset].initSpinnerRenderer();
+         }
+    }
+    
+    public void initSpinnerRenderer() {
+    	initSpinnerRenderer(0);
+    }
 
     /**
      * Some components may optionally generate a state which can then be restored

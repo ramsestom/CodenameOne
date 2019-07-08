@@ -2037,6 +2037,15 @@ public class Toolbar extends Container {
     }
 
     /**
+     * Removes a Command from the MenuBar
+     * 
+     * @param cmd Command to remove
+     */
+    public void removeCommand(Command cmd) {
+        getMenuBar().removeCommand(cmd);
+    }
+    
+    /**
      * Adds a Command to the TitleArea on the right side.
      * By default rightbar commands stacks from the right. 
      * meaning that, if the TileArea already contains right commands, the new one would be displayed at their right 

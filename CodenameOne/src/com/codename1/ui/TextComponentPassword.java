@@ -65,7 +65,7 @@ public class TextComponentPassword extends TextComponent {
     }
 
     @Override
-    void constructUI() {
+	protected void constructUI() {
         super.constructUI();
         if (field.getConstraint() == TextArea.PASSWORD) {
             Container tfContainer = field.getParent();

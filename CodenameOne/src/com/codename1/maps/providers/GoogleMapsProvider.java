@@ -152,7 +152,7 @@ public class GoogleMapsProvider extends TiledProvider{
      * {@inheritDoc}
      */
     public int maxZoomLevel() {
-        return 18;
+        return 18; //22;  
     }
 
     /**

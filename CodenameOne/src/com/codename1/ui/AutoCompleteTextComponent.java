@@ -159,7 +159,7 @@ public class AutoCompleteTextComponent extends TextComponent {
         initInput();
     }
 
-    void constructUI() {
+    protected void constructUI() {
         if (getComponentCount() == 0) {
             if (isOnTopMode() && isFocusAnimation()) {
                 getLabel().setUIID("FloatingHint");

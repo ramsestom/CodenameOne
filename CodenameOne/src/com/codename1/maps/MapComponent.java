@@ -913,8 +913,7 @@ public class MapComponent extends Container {
             _needTiles = true;
             super.repaint();
         } else {
-            System.out.println("zoom level must be bigger then the min zoom "
-                    + "level and smaller then the max zoom level");
+            System.out.println("zoom level must be bigger than the min zoom level and smaller then the max zoom level");
         }
     }
 

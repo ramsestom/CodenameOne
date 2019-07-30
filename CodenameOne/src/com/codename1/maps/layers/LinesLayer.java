@@ -59,19 +59,23 @@ public class LinesLayer extends AbstractLayer {
     public LinesLayer(Projection p, String name) {
         super(p, name);
         _lineSegments = new Vector();
-        _lineColor = 0x000000;
+        _lineColor = 0xFF000000;
     }
 
     /**
      * {@inheritDoc}
      */
     public void paint(Graphics g, Tile screenTile) {
-        g.setColor(_lineColor);
+        int oa = g.getAlpha();
+    	g.setColor(_lineColor);
+    	int a = ((_lineColor >> 24) & 0xFF);
+    	if (a>0) {g.setAlpha(a);} //if a=0 means the line would be fully transparent -> doesn't make sense as it would be invisible -> this is probably that the color was passed as rgb and not argb so ignore the alpha part
         g.setAntiAliased(true);
         int segmentsNo = _lineSegments.size();
         for (int i = 0; i < segmentsNo; i++) {
             paintSegment(g, (Coord[]) _lineSegments.elementAt(i), screenTile);
         }
+        g.setAlpha(oa);
     }
 
     /**
@@ -113,10 +117,10 @@ public class LinesLayer extends AbstractLayer {
 
     /**
      * Sets the color of the Lines
-     * @param rgb 
+     * @param argb 
      */
-    public void lineColor(int rgb) {
-        _lineColor = rgb;
+    public void lineColor(int argb) {
+        _lineColor = argb;
     }
 
     /**

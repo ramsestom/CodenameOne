@@ -92,6 +92,7 @@ extern void repaintUI();
 extern NSDate* currentDatePickerDate;
 extern JAVA_LONG currentDatePickerDuration;
 extern bool datepickerPopover;
+extern bool galleryPopover;
 //int lastWindowSize = -1;
 extern void stringEdit(int finished, int cursorPos, NSString* text);
 
@@ -3344,6 +3345,7 @@ void cn1_addSelectedImagePath(NSString* path) {
 #endif
     popoverController = nil;
     popoverControllerInstance = nil;
+    galleryPopover = NO;
 }
 
 - (void)qb_imagePickerControllerDidCancel:(QBImagePickerController *)picker
@@ -3352,6 +3354,7 @@ void cn1_addSelectedImagePath(NSString* path) {
     [picker dismissModalViewControllerAnimated:YES];
     popoverController = nil;
     popoverControllerInstance = nil;
+    galleryPopover = NO;
 }
 
 #endif
@@ -3363,6 +3366,7 @@ void cn1_addSelectedImagePath(NSString* path) {
     [picker dismissModalViewControllerAnimated:YES];
     popoverController = nil;
     popoverControllerInstance = nil;
+    galleryPopover = NO;
 }
 
 //#define LOW_MEM_CAMERA
@@ -3410,6 +3414,7 @@ void cn1_addSelectedImagePath(NSString* path) {
     }
     popoverController = nil;
     popoverControllerInstance = nil;
+    galleryPopover = NO;
 
 }
 
@@ -3587,6 +3592,12 @@ extern SKPayment *paymentInstance;
         }
         com_codename1_impl_ios_IOSImplementation_datePickerResult___long(CN1_THREAD_GET_STATE_PASS_ARG -1);
         datepickerPopover = NO;
+    }
+    if(galleryPopover) {
+        com_codename1_impl_ios_IOSImplementation_capturePictureResult___java_lang_String(CN1_THREAD_GET_STATE_PASS_ARG nil);
+        popoverController = nil;
+        popoverControllerInstance = nil;
+        galleryPopover = NO;
     }
 }
 

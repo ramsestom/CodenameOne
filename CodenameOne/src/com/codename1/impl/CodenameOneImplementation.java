@@ -80,6 +80,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
@@ -4740,6 +4741,16 @@ public abstract class CodenameOneImplementation {
     public void setConnectionId(Object connection, int id) {
         
     }
+    
+    /**
+     * This method is called by the NetworkManager when a request is added to the queue.  This allows
+     * the implementation to track the time that the request was queued for diagnostics purposes.
+     * The Simulator's Network monitor uses this information to display stats about each network connection.
+     * @param req The ConnectionRequest that is queued.
+     */
+    public void addConnectionToQueue(ConnectionRequest req) {
+        
+    }
 
     /**
      * Connects to a given URL, returns a connection object to be used with the implementation
@@ -4754,7 +4765,7 @@ public abstract class CodenameOneImplementation {
     public Object connect(String url, boolean read, boolean write, int timeout) throws IOException {
         return connect(url, read, write);
     }
-
+    
     /**
      * Requests special http method such as put or delete
      * @param connection the connection object
@@ -6560,6 +6571,8 @@ public abstract class CodenameOneImplementation {
     public void stopRemoteControl() {
         
     }
+
+    
 
     
 

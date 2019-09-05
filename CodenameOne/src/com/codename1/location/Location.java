@@ -65,14 +65,28 @@ public class Location implements LatLng {
         this.altitude = altitude;
         this.direction = direction;
     }
-
-    
     
     public Location(double latitude, double longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
     }
 
+    public Location(LatLng location) {
+        this(location.getLatitude(), location.getLongitude());
+    }
+
+    public Location(Location location) {
+    	this.status = location.status;
+    	this.latitude = location.latitude;
+    	this.longitude = location.longitude;
+    	this.altitude = location.altitude;
+    	this.accuracy = location.accuracy;
+    	this.direction = location.direction;
+    	this.velocity = location.velocity; 
+    	this.timeStamp = location.timeStamp;
+    }
+    
+    
     /**
      * Returns the horizontal accuracy of the location in meters
      * @return the accuracy if exists or 0.0 if not.

@@ -7217,7 +7217,7 @@ public class FontImage extends Image {
     private int width;
     private int height;
     private int color;
-    private Font fnt;
+   	private Font fnt;
     private String text;
     private int rotated;
     private int backgroundColor;
@@ -7510,6 +7510,41 @@ public class FontImage extends Image {
     public Font getFont() {
         return fnt;
     }
+    
+    
+    
+    public int getColor() {
+		return color;
+	}
+
+	public void setColor(int color) {
+		this.color = color;
+	}
+
+	public int getBackgroundColor() {
+		return backgroundColor;
+	}
+
+	public void setBackgroundColor(int backgroundColor) {
+		this.backgroundColor = backgroundColor;
+	}
+
+	public byte getBackgroundOpacity() {
+		return backgroundOpacity;
+	}
+
+	public void setBackgroundOpacity(byte backgroundOpacity) {
+		this.backgroundOpacity = backgroundOpacity;
+	}
+
+	public int getOpacity() {
+		return opacity;
+	}
+
+	public void setOpacity(int opacity) {
+		this.opacity = opacity;
+	}
+	    
 
     void getRGB(int[] rgbData,
             int offset,

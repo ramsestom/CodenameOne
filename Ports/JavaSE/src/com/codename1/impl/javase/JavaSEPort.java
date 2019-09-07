@@ -5807,34 +5807,34 @@ public class JavaSEPort extends CodenameOneImplementation {
     public void setBlendMode(Object graphics, BlendMode mode) {
     	 checkEDT();
          Graphics2D nativeGraphics = getGraphics(graphics);
-         Composite c = AlphaComposite.SrcOver; 
+         Composite c = AlphaComposite.getInstance(AlphaComposite.SRC_OVER);
          switch (mode) {
          	case SRC_OVER:
-				c = AlphaComposite.SrcOver;
+				c = AlphaComposite.getInstance(AlphaComposite.SRC_OVER);
 				break;
          	case ADD:
          		c = BlendComposite.Add;
          		break;
          	case CLEAR:
-         		c = AlphaComposite.Clear;
+         		c = AlphaComposite.getInstance(AlphaComposite.CLEAR);
          		break;
 			case DARKEN:
 				c = BlendComposite.Darken;
 				break;
 			case DST:
-				c = AlphaComposite.Dst;
+				c = AlphaComposite.getInstance(AlphaComposite.DST);
 				break;
 			case DST_ATOP:
-				c = AlphaComposite.DstAtop; 
+				c = AlphaComposite.getInstance(AlphaComposite.DST_ATOP); 
 				break;
 			case DST_IN:
-				c = AlphaComposite.DstIn;
+				c = AlphaComposite.getInstance(AlphaComposite.DST_IN);
 				break;
 			case DST_OUT:
-				c = AlphaComposite.DstOut;
+				c = AlphaComposite.getInstance(AlphaComposite.DST_OUT);
 				break;
 			case DST_OVER:
-				c = AlphaComposite.DstOver;
+				c = AlphaComposite.getInstance(AlphaComposite.DST_OVER);
 				break;
 			case LIGHTEN:
 				c = BlendComposite.Lighten;
@@ -5849,22 +5849,22 @@ public class JavaSEPort extends CodenameOneImplementation {
 				c = BlendComposite.Screen;
 				break;
 			case SRC:
-				c = AlphaComposite.Src;
+				c = AlphaComposite.getInstance(AlphaComposite.SRC);
 				break;
 			case SRC_ATOP:
-				c = AlphaComposite.SrcAtop;
+				c = AlphaComposite.getInstance(AlphaComposite.SRC_ATOP);
 				break;
 			case SRC_IN:
-				c = AlphaComposite.SrcIn;
+				c = AlphaComposite.getInstance(AlphaComposite.SRC_IN);
 				break;
 			case SRC_OUT:
-				c = AlphaComposite.SrcOut;
+				c = AlphaComposite.getInstance(AlphaComposite.SRC_OUT);
 				break;
 			case XOR:
-				c = AlphaComposite.Xor;
+				c = AlphaComposite.getInstance(AlphaComposite.XOR);
 				break;
 			default:
-				c = AlphaComposite.SrcOver;
+				c = AlphaComposite.getInstance(AlphaComposite.SRC_OVER);
 				break;
          		
          }
@@ -5903,40 +5903,40 @@ public class JavaSEPort extends CodenameOneImplementation {
     	 Composite c = nativeGraphics.getComposite();
     	 if (c instanceof AlphaComposite) {
     		 AlphaComposite ac = (AlphaComposite) c;
-    		 if (ac.equals(AlphaComposite.SrcOver)) {
+    		 if (ac.getRule()==AlphaComposite.SRC_OVER) {
     			 return BlendMode.SRC_OVER;
     		 }
-    		 if (ac.equals(AlphaComposite.Clear)) {
+    		 if (ac.getRule()==AlphaComposite.CLEAR) {
     			 return BlendMode.CLEAR;
     		 }
-    		 if (ac.equals(AlphaComposite.Dst)) {
+    		 if (ac.getRule()==AlphaComposite.DST) {
     			 return BlendMode.DST;
     		 }
-    		 if (ac.equals(AlphaComposite.DstAtop)) {
+    		 if (ac.getRule()==AlphaComposite.DST_ATOP) {
     			 return BlendMode.DST_ATOP;
     		 }
-    		 if (ac.equals(AlphaComposite.DstIn)) {
+    		 if (ac.getRule()==AlphaComposite.DST_IN) {
     			 return BlendMode.DST_IN;
     		 }
-    		 if (ac.equals(AlphaComposite.DstOut)) {
+    		 if (ac.getRule()==AlphaComposite.DST_OUT) {
     			 return BlendMode.DST_OUT;
     		 }
-    		 if (ac.equals(AlphaComposite.DstOver)) {
+    		 if (ac.getRule()==AlphaComposite.DST_OVER) {
     			 return BlendMode.DST_OVER;
     		 }
-    		 if (ac.equals(AlphaComposite.Src)) {
+    		 if (ac.getRule()==AlphaComposite.SRC) {
     			 return BlendMode.SRC;
     		 }
-    		 if (ac.equals(AlphaComposite.SrcAtop)) {
+    		 if (ac.getRule()==AlphaComposite.SRC_ATOP) {
     			 return BlendMode.SRC_ATOP;
     		 }
-    		 if (ac.equals(AlphaComposite.SrcIn)) {
+    		 if (ac.getRule()==AlphaComposite.SRC_IN) {
     			 return BlendMode.SRC_IN;
     		 }
-    		 if (ac.equals(AlphaComposite.SrcOut)) {
+    		 if (ac.getRule()==AlphaComposite.SRC_OUT) {
     			 return BlendMode.SRC_OUT;
     		 }
-    		 if (ac.equals(AlphaComposite.Xor)) {
+    		 if (ac.getRule()==AlphaComposite.XOR) {
     			 return BlendMode.XOR;
     		 }
     	 }
